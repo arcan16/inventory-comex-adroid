@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        style="@style/App.Toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationIcon="@drawable/ic_menu"
+        app:navigationIconTint="?attr/colorOnPrimary"
+        app:title="@string/reports_title" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp">
+        <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/reports_col_date" />
+        <TextView style="@style/App.ListHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/reports_col_presentation" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@drawable/bg_field"
+            android:divider="@drawable/divider_line"
+            android:showDividers="middle">
+
+            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView style="@style/App.ListRow.Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="04 ene 2024" />
+                <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4 LTS" />
+            </LinearLayout>
+            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView style="@style/App.ListRow.Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="28 dic 2023" />
+                <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="19 LTS" />
+            </LinearLayout>
+            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView style="@style/App.ListRow.Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="15 dic 2023" />
+                <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1 LT" />
+            </LinearLayout>
+            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
+                <TextView style="@style/App.ListRow.Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="02 dic 2023" />
+                <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PIEZA" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

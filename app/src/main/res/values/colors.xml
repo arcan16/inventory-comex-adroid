@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Material 3 roles - tema claro -->
+    <color name="md_theme_primary">#1E4FB8</color>
+    <color name="md_theme_onPrimary">#FFFFFF</color>
+    <color name="md_theme_primaryContainer">#E4ECFB</color>
+    <color name="md_theme_onPrimaryContainer">#0B2B66</color>
+
+    <color name="md_theme_tertiary">#D9860F</color>
+    <color name="md_theme_onTertiary">#241604</color>
+    <color name="md_theme_tertiaryContainer">#FBEBD3</color>
+    <color name="md_theme_onTertiaryContainer">#4A2E02</color>
+
+    <color name="md_theme_error">#C43B3B</color>
+    <color name="md_theme_onError">#FFFFFF</color>
+    <color name="md_theme_errorContainer">#FBE2E2</color>
+    <color name="md_theme_onErrorContainer">#5C1414</color>
+
+    <color name="md_theme_background">#F1F2F5</color>
+    <color name="md_theme_onBackground">#14203A</color>
+    <color name="md_theme_surface">#FFFFFF</color>
+    <color name="md_theme_surfaceVariant">#F7F8FA</color>
+    <color name="md_theme_onSurface">#14203A</color>
+    <color name="md_theme_onSurfaceVariant">#5C6A82</color>
+    <color name="md_theme_outline">#D8DCE4</color>
+
+    <!-- Rol semantico propio: "exito" (Material 3 no trae uno por defecto) -->
+    <color name="app_success">#1F8A57</color>
+    <color name="app_onSuccess">#FFFFFF</color>
+    <color name="app_successContainer">#DFF3E8</color>
+    <color name="app_onSuccessContainer">#0C3D22</color>
+</resources>

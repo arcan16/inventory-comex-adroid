@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    El backend de Inventories corre sobre HTTP plano dentro de la red local del
+    almacen (sin dominio ni certificado TLS - ver ServerConfigActivity). Desde
+    Android 9 el trafico en claro esta bloqueado por defecto, asi que se habilita
+    explicitamente aqui en vez de con el atributo global usesCleartextTraffic,
+    para dejar esta decision en un solo lugar y poder acotarla si el backend
+    alguna vez queda detras de HTTPS.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

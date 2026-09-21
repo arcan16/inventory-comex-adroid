@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        style="@style/App.Toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:navigationIcon="@drawable/ic_menu"
+        app:navigationIconTint="?attr/colorOnPrimary"
+        app:title="@string/products_title"
+        app:subtitle="1,842 registrados">
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/ic_search"
+            app:tint="?attr/colorOnPrimary"
+            android:contentDescription="@string/products_title" />
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:background="@drawable/bg_field"
+            android:divider="@drawable/divider_line"
+            android:showDividers="middle">
+
+            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10292" />
+                <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="THINNER E" />
+            </LinearLayout>
+            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1100" />
+                <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="REAL FLEX BLANCO" />
+            </LinearLayout>
+            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="11710" />
+                <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RESISTOL 5000 4 L" />
+            </LinearLayout>
+            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="11801" />
+                <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="VINIMEX BIOSENSE SAT B1" />
+            </LinearLayout>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:padding="12dp"
+                android:text="@string/products_loading_more"
+                android:textAppearance="?attr/textAppearanceLabelSmall"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

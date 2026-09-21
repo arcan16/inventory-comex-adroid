@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="?android:attr/colorBackground">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            style="@style/App.Toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_back"
+            app:navigationIconTint="?attr/colorOnPrimary"
+            app:title="@string/users_title" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:background="@drawable/bg_field"
+                android:divider="@drawable/divider_line"
+                android:showDividers="middle">
+
+                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="admin" />
+                        <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="admin@inventory.com" />
+                    </LinearLayout>
+                    <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/ic_more" app:tint="?attr/colorOnSurfaceVariant" android:contentDescription="@string/nav_more" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="bodega1" />
+                        <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="bodega1@comex.mx" />
+                    </LinearLayout>
+                    <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/ic_more" app:tint="?attr/colorOnSurfaceVariant" android:contentDescription="@string/nav_more" />
+                </LinearLayout>
+
+                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                        <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="bodega2" />
+                        <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="bodega2@comex.mx" />
+                    </LinearLayout>
+                    <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@drawable/ic_more" app:tint="?attr/colorOnSurfaceVariant" android:contentDescription="@string/nav_more" />
+                </LinearLayout>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:src="@drawable/ic_plus"
+        app:tint="?attr/colorOnTertiary"
+        app:backgroundTint="?attr/colorTertiary"
+        android:contentDescription="@string/nav_add" />
+</FrameLayout>

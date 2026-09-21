@@ -1,0 +1,170 @@
+<resources>
+    <string name="app_name">ComexConteo</string>
+
+    <!-- Login -->
+    <string name="login_app_title">Inventarios y Stock</string>
+    <string name="login_app_subtitle">Comex Anáhuac</string>
+    <string name="login_username_label">Usuario</string>
+    <string name="login_password_label">Contraseña</string>
+    <string name="login_username_hint">Usuario</string>
+    <string name="login_submit">Iniciar sesión</string>
+    <string name="login_loading">Iniciando sesión…</string>
+    <string name="login_server_footer_configured">Servidor: %1$s · Configurar</string>
+    <string name="login_server_footer_unconfigured">Sin servidor configurado · Configurar</string>
+    <string name="login_error_username_required">Escribe tu usuario</string>
+    <string name="login_error_password_required">Escribe tu contraseña</string>
+    <string name="login_error_server_required">Configura primero el servidor</string>
+    <string name="login_error_invalid_credentials">Usuario o contraseña incorrectos</string>
+    <string name="login_error_network">No fue posible conectar con el servidor: %1$s</string>
+
+    <!-- Configurar servidor -->
+    <string name="server_config_title">Configurar servidor</string>
+    <string name="server_config_subtitle">Red local · sin dominio</string>
+    <string name="server_config_explainer">La app se conecta directo a la IP del backend dentro del Wi-Fi del almacén. Actualiza este dato cada vez que el servidor cambie de red.</string>
+    <string name="server_config_ip_label">Dirección IP</string>
+    <string name="server_config_port_label">Puerto</string>
+    <string name="server_config_ip_hint">192.168.1.72</string>
+    <string name="server_config_url_label">URL resultante</string>
+    <string name="server_config_url_empty">—</string>
+    <string name="server_config_test">Probar conexión</string>
+    <string name="server_config_testing">Probando…</string>
+    <string name="server_config_status_ok">Conectado · %1$d ms</string>
+    <string name="server_config_status_bad_response">El servidor respondió con error (%1$d)</string>
+    <string name="server_config_status_unreachable">No fue posible conectar: %1$s</string>
+    <string name="server_config_saved_networks">Redes guardadas</string>
+    <string name="server_config_save">Guardar y continuar</string>
+    <string name="server_config_error_ip_required">Escribe la dirección IP del servidor</string>
+    <string name="server_config_saved_toast">Servidor guardado</string>
+
+    <!-- Navegación / genérico -->
+    <string name="nav_back">Atrás</string>
+    <string name="nav_menu">Menú</string>
+    <string name="nav_more">Más opciones</string>
+    <string name="nav_add">Agregar</string>
+
+    <!-- Home -->
+    <string name="home_title">Inicio</string>
+    <string name="home_logout_action">Cerrar sesión</string>
+    <string name="home_logout_dialog_title">Cerrar sesión</string>
+    <string name="home_logout_dialog_message">¿Seguro que quieres cerrar sesión?</string>
+    <string name="home_logout_dialog_confirm">Cerrar sesión</string>
+    <string name="action_cancel">Cancelar</string>
+    <string name="home_tile_inventories">Inventarios</string>
+    <string name="home_tile_inventories_desc">Conteos físicos</string>
+    <string name="home_tile_reports">Reportes</string>
+    <string name="home_tile_reports_desc">Resumen por fecha</string>
+    <string name="home_tile_products">Productos</string>
+    <string name="home_tile_products_desc">Catálogo</string>
+    <string name="home_tile_stock">Stock</string>
+    <string name="home_tile_stock_desc">Por presentación</string>
+    <string name="nav_bottom_home">Inicio</string>
+    <string name="nav_bottom_reports">Reportes</string>
+    <string name="nav_bottom_products">Productos</string>
+    <string name="nav_bottom_stock">Stock</string>
+
+    <!-- Inventarios -->
+    <string name="inventories_title">Inventarios</string>
+    <string name="inventories_col_presentation">Presentación</string>
+    <string name="inventories_col_date">Fecha</string>
+    <string name="inventories_menu_guided">Conteo guiado</string>
+    <string name="inventories_menu_delete">Eliminar</string>
+    <string name="inventories_empty">No hay inventarios registrados</string>
+    <string name="inventories_load_error">No fue posible cargar los inventarios</string>
+    <string name="inventories_retry">Reintentar</string>
+    <string name="inventories_delete_confirm_title">Eliminar inventario</string>
+    <string name="inventories_delete_confirm_message">¿Seguro que quieres eliminar el inventario %1$s? Esta acción no se puede deshacer.</string>
+    <string name="inventories_deleted_toast">Inventario eliminado</string>
+    <string name="inventories_delete_error">No fue posible eliminar el inventario: %1$s</string>
+    <string name="inventories_session_expired">Tu sesión expiró, inicia sesión de nuevo</string>
+
+    <!-- Cargar inventario -->
+    <string name="upload_title">Cargar inventario</string>
+    <string name="upload_subtitle">Reporte de existencias</string>
+    <string name="upload_dropzone_placeholder_title">Selecciona el reporte de existencias (.csv)</string>
+    <string name="upload_dropzone_placeholder_meta">Toca para buscar en tu dispositivo</string>
+    <string name="upload_dropzone_selected_meta">%1$s · toca para cambiar</string>
+    <string name="upload_submit">Procesar y crear inventario</string>
+    <string name="upload_submit_loading">Procesando…</string>
+    <string name="upload_result_title">Inventario #%1$d creado</string>
+    <string name="upload_result_body">Presentación %2$s\n%1$d filas procesadas · %3$d productos nuevos\n%4$d registros de stock</string>
+    <string name="upload_error_not_csv">Selecciona un archivo .csv válido</string>
+    <string name="upload_error_read_file">No fue posible leer el archivo: %1$s</string>
+    <string name="upload_error_generic">No fue posible procesar el inventario: %1$s</string>
+    <string name="upload_error_server_required">Configura primero el servidor</string>
+
+    <!-- Conteo normal -->
+    <string name="count_normal_title">Conteo físico</string>
+    <string name="toggle_number">Número</string>
+    <string name="toggle_text">Texto</string>
+    <string name="count_code_label">Código</string>
+    <string name="count_stock_label">Stock</string>
+    <string name="count_quantity_label">Cantidad</string>
+    <string name="count_difference_label">Diferencia</string>
+    <string name="count_add">Agregar</string>
+    <string name="count_cancel">Cancelar</string>
+    <string name="count_summary_button">Resumen</string>
+    <string name="count_col_id">Id</string>
+    <string name="count_col_quantity">Cantidad</string>
+    <string name="count_col_action">Acción</string>
+    <string name="count_normal_unknown_code">El código no se encuentra registrado</string>
+    <string name="count_normal_no_counts_yet">Todavía no hay conteos registrados</string>
+    <string name="count_normal_load_error">No fue posible cargar los datos del inventario</string>
+    <string name="count_place_label">Lugar</string>
+    <string name="count_add_loading">Agregando…</string>
+    <string name="count_add_success">Producto agregado al conteo</string>
+    <string name="count_add_error">No fue posible agregar el producto: %1$s</string>
+    <string name="count_error_code_required">Escribe el código del producto</string>
+    <string name="count_error_unknown_product">Este código no está registrado en el catálogo de productos</string>
+    <string name="count_error_quantity_required">Escribe la cantidad contada</string>
+    <string name="count_error_quantity_positive">La cantidad debe ser mayor a 0</string>
+
+    <string-array name="product_location_labels">
+        <item>Piso de venta</item>
+        <item>Almacén</item>
+        <item>Bodega</item>
+        <item>Nota</item>
+    </string-array>
+
+    <!-- Conteo guiado -->
+    <string name="count_guided_title">Conteo guiado</string>
+    <string name="count_guided_previous">Anterior</string>
+    <string name="count_guided_current">Actual</string>
+    <string name="count_guided_next">Siguiente</string>
+    <string name="count_guided_id_label">Id</string>
+    <string name="count_guided_description_label">Descripción</string>
+    <string name="count_guided_btn_prev">‹ Anterior</string>
+    <string name="count_guided_btn_next">Siguiente ›</string>
+
+    <!-- Resumen de conteo -->
+    <string name="count_summary_title">Resumen</string>
+    <string name="count_summary_col_id">Id</string>
+    <string name="count_summary_col_stock">Stock</string>
+    <string name="count_summary_col_count">Conteo</string>
+    <string name="count_summary_col_diff">Dif.</string>
+    <string name="count_summary_export">Exportar PDF</string>
+
+    <!-- Reportes -->
+    <string name="reports_title">Reportes</string>
+    <string name="reports_col_date">Fecha</string>
+    <string name="reports_col_presentation">Presentación</string>
+
+    <!-- Productos -->
+    <string name="products_title">Productos</string>
+    <string name="products_loading_more">Cargando más…</string>
+
+    <!-- Stock -->
+    <string name="stock_title">Stock</string>
+    <string name="stock_tile_buckets">Cubetas</string>
+    <string name="stock_tile_gallons">Galones</string>
+    <string name="stock_tile_liters">Litros</string>
+    <string name="stock_tile_pieces">Piezas</string>
+    <string name="stock_type_title">Stock · Galones</string>
+    <string name="stock_type_col_id">Id</string>
+    <string name="stock_type_col_date">Fecha</string>
+    <string name="stock_type_col_presentation">Present.</string>
+    <string name="stock_summary_title">Resumen · Galones</string>
+    <string name="stock_summary_filter_hint">Filtrar por descripción…</string>
+
+    <!-- Usuarios -->
+    <string name="users_title">Usuarios</string>
+</resources>
