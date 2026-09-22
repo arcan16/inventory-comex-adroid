@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -27,7 +26,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class InventoriesActivity extends AppCompatActivity implements InventoryAdapter.OnInventoryActionListener {
+public class InventoriesActivity extends BaseActivity implements InventoryAdapter.OnInventoryActionListener {
 
     private static final int PAGE_SIZE = 50;
 

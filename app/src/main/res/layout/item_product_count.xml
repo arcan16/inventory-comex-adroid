@@ -4,7 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/App.ListRow"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/tvCountProductId"
@@ -23,9 +26,14 @@
         tools:text="5.000" />
 
     <ImageView
-        android:layout_width="18dp"
-        android:layout_height="18dp"
+        android:id="@+id/ivDeleteCount"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:padding="9dp"
         android:src="@drawable/ic_trash"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true"
         app:tint="?attr/colorOnSurfaceVariant"
-        android:contentDescription="@null" />
+        android:contentDescription="@string/count_col_action" />
 </LinearLayout>

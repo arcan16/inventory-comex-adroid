@@ -15,7 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -45,7 +45,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class CountNormalActivity extends AppCompatActivity {
+public class CountNormalActivity extends BaseActivity implements ProductCountAdapter.OnProductCountActionListener {
 
     public static final String EXTRA_INVENTORY_ID = "extra_inventory_id";
     public static final String EXTRA_PRESENTATION = "extra_presentation";
@@ -63,6 +63,8 @@ public class CountNormalActivity extends AppCompatActivity {
     private List<StockItemDTO> stock = Collections.emptyList();
     private List<ProductCountEntryDTO> productCounts = Collections.emptyList();
     private float existingDifference;
+    private boolean isDeletingCount;
+    private ProductCountEntryDTO editingEntry;
 
     private View contentScroll;
     private View progressLoad;
@@ -122,7 +124,7 @@ public class CountNormalActivity extends AppCompatActivity {
         spinnerPlace.setAdapter(placeAdapter);
         spinnerPlace.setSelection(PLACE_DEFAULT_INDEX);
 
-        adapter = new ProductCountAdapter();
+        adapter = new ProductCountAdapter(this);
         recyclerProductCounts.setLayoutManager(new LinearLayoutManager(this));
         recyclerProductCounts.setAdapter(adapter);
 
@@ -166,6 +168,7 @@ public class CountNormalActivity extends AppCompatActivity {
         btnAdd.setOnClickListener(v -> addProductCount());
         btnCancel.setOnClickListener(v -> resetForm());
         findViewById(R.id.btnRetryLoad).setOnClickListener(v -> loadData());
+        findViewById(R.id.btnSummary).setOnClickListener(v -> openSummary(presentation, dateIso));
 
         loadData();
     }
@@ -219,6 +222,14 @@ public class CountNormalActivity extends AppCompatActivity {
         });
     }
 
+    private void openSummary(String presentation, String dateIso) {
+        Intent intent = new Intent(this, CountSummaryActivity.class);
+        intent.putExtra(CountSummaryActivity.EXTRA_INVENTORY_ID, inventoryId);
+        intent.putExtra(CountSummaryActivity.EXTRA_PRESENTATION, presentation);
+        intent.putExtra(CountSummaryActivity.EXTRA_DATE, dateIso);
+        startActivity(intent);
+    }
+
     private void showError(String message) {
         tvErrorMessage.setText(message);
         errorState.setVisibility(View.VISIBLE);
@@ -240,11 +251,17 @@ public class CountNormalActivity extends AppCompatActivity {
             return;
         }
 
+        updateStockDisplay(code);
+        existingDifference = computeExistingDifference(code, null);
+        refreshDifferenceDisplay();
+    }
+
+    /** Muestra el stock esperado y la descripcion del producto con el codigo dado. */
+    private void updateStockDisplay(String code) {
         StockItemDTO stockMatch = findStockMatch(code);
         if (stockMatch != null) {
             tvStockValue.setText(String.format(Locale.US, "%.3f", stockMatch.getStock()));
             tvProductDescription.setText(stockMatch.getDescription());
-            tvProductDescription.setVisibility(View.VISIBLE);
         } else {
             ProductDTO productMatch = findProductMatch(code);
             if (productMatch != null) {
@@ -254,18 +271,27 @@ public class CountNormalActivity extends AppCompatActivity {
                 tvStockValue.setText("");
                 tvProductDescription.setText(R.string.count_normal_unknown_code);
             }
-            tvProductDescription.setVisibility(View.VISIBLE);
         }
+        tvProductDescription.setVisibility(View.VISIBLE);
+    }
 
+    /**
+     * Suma los conteos ya registrados para el codigo dado (sin contar el renglon
+     * excludeEntryId, si se recibe) y la compara contra el stock esperado.
+     */
+    private float computeExistingDifference(String code, Long excludeEntryId) {
+        StockItemDTO stockMatch = findStockMatch(code);
         float stockValue = stockMatch != null ? stockMatch.getStock() : 0f;
         float countedTotal = 0f;
         for (ProductCountEntryDTO entry : productCounts) {
+            if (excludeEntryId != null && entry.getId() == excludeEntryId) {
+                continue;
+            }
             if (entry.getIdProduct() != null && code.equals(entry.getIdProduct().getId())) {
                 countedTotal += entry.getQuantity();
             }
         }
-        existingDifference = countedTotal - stockValue;
-        refreshDifferenceDisplay();
+        return countedTotal - stockValue;
     }
 
     private void refreshDifferenceDisplay() {
@@ -275,7 +301,7 @@ public class CountNormalActivity extends AppCompatActivity {
             return;
         }
         try {
-            float quantity = Float.parseFloat(quantityText);
+            float quantity = Float.parseFloat(quantityText.replace(',', '.'));
             tvDifference.setText(String.format(Locale.US, "%+.3f", quantity + existingDifference));
         } catch (NumberFormatException ignored) {
             // El usuario todavia esta escribiendo (ej. "1."); se actualiza en el siguiente caracter.
@@ -326,7 +352,7 @@ public class CountNormalActivity extends AppCompatActivity {
 
         float quantity;
         try {
-            quantity = Float.parseFloat(quantityText);
+            quantity = Float.parseFloat(quantityText.replace(',', '.'));
         } catch (NumberFormatException e) {
             etQuantity.setError(getString(R.string.count_error_quantity_required));
             return;
@@ -340,6 +366,15 @@ public class CountNormalActivity extends AppCompatActivity {
 
         setAddLoadingState(true);
 
+        if (editingEntry != null) {
+            updateProductCount(editingEntry, code, quantity, place);
+        } else {
+            createProductCount(code, quantity, place);
+        }
+    }
+
+    /** Crea un nuevo renglon de conteo (POST /productCounts). */
+    private void createProductCount(String code, float quantity, String place) {
         ProductCountsApi api = ApiClient.createProductCountsApi(
                 serverPreferences.getBaseUrl(), sessionPreferences.getToken());
 
@@ -376,14 +411,101 @@ public class CountNormalActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * El backend no tiene un endpoint de actualizacion para /productCounts, asi
+     * que "actualizar" un renglon se implementa eliminando el registro original
+     * y creando uno nuevo con los valores capturados.
+     */
+    private void updateProductCount(ProductCountEntryDTO original, String code, float quantity, String place) {
+        ProductCountsApi api = ApiClient.createProductCountsApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+
+        api.deleteProductCount(original.getId()).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                if (response.code() == 401) {
+                    setAddLoadingState(false);
+                    handleSessionExpired();
+                    return;
+                }
+
+                if (!response.isSuccessful()) {
+                    setAddLoadingState(false);
+                    Toast.makeText(CountNormalActivity.this,
+                            getString(R.string.count_update_error, ApiErrorUtils.parseErrorMessage(response)),
+                            Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                recreateAfterUpdate(code, quantity, place);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                setAddLoadingState(false);
+                String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                Toast.makeText(CountNormalActivity.this,
+                        getString(R.string.count_update_error, reason), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /** Segundo paso de updateProductCount: el registro original ya se elimino, ahora se crea el reemplazo. */
+    private void recreateAfterUpdate(String code, float quantity, String place) {
+        ProductCountsApi api = ApiClient.createProductCountsApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+
+        api.addProductCount(new NewProductCountRequest(inventoryId, code, quantity, place))
+                .enqueue(new Callback<ProductCountCreatedDTO>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ProductCountCreatedDTO> call,
+                                            @NonNull Response<ProductCountCreatedDTO> response) {
+                        setAddLoadingState(false);
+
+                        if (response.code() == 401) {
+                            // El registro original ya se elimino del servidor aunque la sesion haya expirado aqui.
+                            handleSessionExpired();
+                            return;
+                        }
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            Toast.makeText(CountNormalActivity.this, R.string.count_update_success, Toast.LENGTH_SHORT).show();
+                        } else {
+                            // El renglon original ya no existe: se avisa y se recarga para reflejar el estado real.
+                            Toast.makeText(CountNormalActivity.this,
+                                    getString(R.string.count_update_partial_error, ApiErrorUtils.parseErrorMessage(response)),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        resetForm();
+                        loadData();
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ProductCountCreatedDTO> call, @NonNull Throwable t) {
+                        setAddLoadingState(false);
+                        String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                        Toast.makeText(CountNormalActivity.this,
+                                getString(R.string.count_update_partial_error, reason), Toast.LENGTH_LONG).show();
+                        resetForm();
+                        loadData();
+                    }
+                });
+    }
+
     private void setAddLoadingState(boolean loading) {
         btnAdd.setEnabled(!loading);
         btnCancel.setEnabled(!loading);
-        btnAdd.setText(loading ? R.string.count_add_loading : R.string.count_add);
+        if (loading) {
+            btnAdd.setText(editingEntry != null ? R.string.count_update_loading : R.string.count_add_loading);
+        } else {
+            updateAddButtonLabel();
+        }
         progressAdd.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 
     private void resetForm() {
+        editingEntry = null;
+        updateAddButtonLabel();
         etCode.setText("");
         tvStockValue.setText("");
         tvProductDescription.setVisibility(View.GONE);
@@ -391,5 +513,88 @@ public class CountNormalActivity extends AppCompatActivity {
         tvDifference.setText("");
         existingDifference = 0f;
         etCode.requestFocus();
+    }
+
+    @Override
+    public void onSelect(ProductCountEntryDTO entry) {
+        editingEntry = entry;
+        updateAddButtonLabel();
+
+        String code = entry.getIdProduct() != null ? entry.getIdProduct().getId() : "";
+        etCode.setText(code);
+        updateStockDisplay(code);
+        selectPlace(entry.getPlace());
+
+        existingDifference = computeExistingDifference(code, entry.getId());
+        etQuantity.setText(String.format(Locale.US, "%.3f", entry.getQuantity()));
+        etQuantity.setSelection(etQuantity.getText().length());
+        refreshDifferenceDisplay();
+    }
+
+    private void selectPlace(String place) {
+        for (int i = 0; i < PLACE_API_VALUES.length; i++) {
+            if (PLACE_API_VALUES[i].equals(place)) {
+                spinnerPlace.setSelection(i);
+                return;
+            }
+        }
+    }
+
+    private void updateAddButtonLabel() {
+        btnAdd.setText(editingEntry != null ? R.string.count_update : R.string.count_add);
+    }
+
+    @Override
+    public void onDelete(ProductCountEntryDTO entry) {
+        String productId = entry.getIdProduct() != null ? entry.getIdProduct().getId() : "";
+        String quantityText = String.format(Locale.US, "%.3f", entry.getQuantity());
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.count_delete_confirm_title)
+                .setMessage(getString(R.string.count_delete_confirm_message, productId, quantityText))
+                .setPositiveButton(R.string.inventories_menu_delete, (dialog, which) -> deleteProductCount(entry))
+                .setNegativeButton(R.string.action_cancel, null)
+                .show();
+    }
+
+    private void deleteProductCount(ProductCountEntryDTO entry) {
+        if (isDeletingCount) {
+            return;
+        }
+        isDeletingCount = true;
+
+        ProductCountsApi api = ApiClient.createProductCountsApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+
+        api.deleteProductCount(entry.getId()).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(@NonNull Call<Void> call, @NonNull Response<Void> response) {
+                isDeletingCount = false;
+
+                if (response.code() == 401) {
+                    handleSessionExpired();
+                    return;
+                }
+
+                if (response.isSuccessful()) {
+                    Toast.makeText(CountNormalActivity.this, R.string.count_deleted_toast, Toast.LENGTH_SHORT).show();
+                    if (editingEntry != null && editingEntry.getId() == entry.getId()) {
+                        resetForm();
+                    }
+                    loadData();
+                } else {
+                    Toast.makeText(CountNormalActivity.this,
+                            getString(R.string.count_delete_error, ApiErrorUtils.parseErrorMessage(response)),
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<Void> call, @NonNull Throwable t) {
+                isDeletingCount = false;
+                String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                Toast.makeText(CountNormalActivity.this,
+                        getString(R.string.count_delete_error, reason), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }

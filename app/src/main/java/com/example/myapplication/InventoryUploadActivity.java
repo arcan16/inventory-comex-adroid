@@ -11,7 +11,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myapplication.data.ServerPreferences;
 import com.example.myapplication.data.SessionPreferences;
@@ -35,7 +34,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class InventoryUploadActivity extends AppCompatActivity {
+public class InventoryUploadActivity extends BaseActivity {
 
     private final ExecutorService ioExecutor = Executors.newSingleThreadExecutor();
 

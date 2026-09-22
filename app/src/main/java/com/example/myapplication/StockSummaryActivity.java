@@ -2,9 +2,7 @@ package com.example.myapplication;
 
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-public class StockSummaryActivity extends AppCompatActivity {
+public class StockSummaryActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -1,101 +1,229 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="?android:attr/colorBackground">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         style="@style/App.Toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:navigationIcon="@drawable/ic_back"
         app:navigationIconTint="?attr/colorOnPrimary"
-        app:title="@string/count_guided_title"
-        app:subtitle="333 productos · 4 LTS" />
+        app:title="@string/count_guided_title" />
 
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
-        <LinearLayout
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/contentScroll"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <com.google.android.material.card.MaterialCardView
-                style="@style/App.Card.Muted"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <TextView style="@style/App.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_previous" />
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textStyle="bold" android:textColor="?attr/colorOnSurface" android:text="10292" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorOnSurfaceVariant" android:text="THINNER E" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                style="@style/App.Card.Highlight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <TextView style="@style/App.Chip.Primary" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_current" />
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="10dp">
-                        <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="8dp">
-                            <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_id_label" />
-                            <TextView style="@style/App.Field.Value.Muted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1100" android:focusable="true" android:focusableInTouchMode="true" />
-                        </LinearLayout>
-                        <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                            <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_description_label" />
-                            <TextView style="@style/App.Field.Value.Muted" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="REAL FLEX BLANCO" />
-                        </LinearLayout>
-                    </LinearLayout>
-                    <LinearLayout style="@style/App.Field" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp">
-                        <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_quantity_label" />
-                        <TextView style="@style/App.Field.Value" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="—" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <com.google.android.material.card.MaterialCardView
-                style="@style/App.Card.Muted"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp">
-                <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-                    <TextView style="@style/App.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_next" />
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
-                        <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textStyle="bold" android:textColor="?attr/colorOnSurface" android:text="11710" />
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorOnSurfaceVariant" android:text="RESISTOL 5000 4L" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+            android:layout_height="match_parent"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="16dp">
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvGuidedProgress"
+                    style="@style/App.SectionLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    tools:text="Producto 3 de 45" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPrevious"
+                    style="@style/App.Card.Muted"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                        <TextView style="@style/App.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_previous" />
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
+                            <TextView android:id="@+id/tvPrevId" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textStyle="bold" android:textColor="?attr/colorOnSurface" tools:text="10292" />
+                            <TextView android:id="@+id/tvPrevDescription" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorOnSurfaceVariant" tools:text="THINNER E" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    style="@style/App.Card.Highlight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                        <TextView style="@style/App.Chip.Primary" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_current" />
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="10dp">
+                            <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="8dp">
+                                <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_id_label" />
+                                <TextView android:id="@+id/tvCurrentId" style="@style/App.Field.Value.Muted" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="1100" />
+                            </LinearLayout>
+                            <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_description_label" />
+                                <TextView android:id="@+id/tvCurrentDescription" style="@style/App.Field.Value.Muted" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="REAL FLEX BLANCO" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="10dp">
+                            <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="8dp">
+                                <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_stock_label" />
+                                <TextView android:id="@+id/tvCurrentStock" style="@style/App.Field.Value.Muted" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="5.000" />
+                            </LinearLayout>
+                            <LinearLayout style="@style/App.Field" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+                                <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_quantity_label" />
+                                <EditText
+                                    android:id="@+id/etQuantity"
+                                    style="@style/App.Field.Value"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:background="@null"
+                                    android:padding="0dp"
+                                    android:minHeight="0dp"
+                                    android:inputType="numberDecimal"
+                                    android:maxLines="1"
+                                    android:imeOptions="actionDone"
+                                    android:hint="@string/count_guided_quantity_hint" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout style="@style/App.Field" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp">
+                            <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_place_label" />
+                            <Spinner
+                                android:id="@+id/spinnerPlace"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:minHeight="0dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardNext"
+                    style="@style/App.Card.Muted"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
+                        <TextView style="@style/App.SectionLabel" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_next" />
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="4dp">
+                            <TextView android:id="@+id/tvNextId" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textStyle="bold" android:textColor="?attr/colorOnSurface" tools:text="11710" />
+                            <TextView android:id="@+id/tvNextDescription" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="?attr/colorOnSurfaceVariant" tools:text="RESISTOL 5000 4L" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="16dp">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPrev"
+                        style="@style/App.Button.Ghost"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="@string/count_guided_btn_prev" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnNext"
+                        style="@style/App.Button.Primary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/count_guided_btn_next" />
+                    <ProgressBar
+                        android:id="@+id/progressSubmit"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_marginStart="12dp"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="18dp">
+                    <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_col_id" />
+                    <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_col_quantity" />
+                    <TextView style="@style/App.ListHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_col_action" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerProductCounts"
+                    android:layout_width="match_parent"
+                    android:layout_height="240dp"
+                    android:layout_marginTop="6dp"
+                    android:background="@drawable/bg_field"
+                    android:nestedScrollingEnabled="true" />
+
+                <TextView
+                    android:id="@+id/tvCountsEmpty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="@string/count_normal_no_counts_yet"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone" />
+
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSummary"
                     style="@style/App.Button.Ghost"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    android:text="@string/count_guided_btn_prev" />
-                <com.google.android.material.button.MaterialButton
-                    style="@style/App.Button.Primary"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/count_guided_btn_next" />
+                    android:layout_marginTop="14dp"
+                    android:text="@string/count_summary_button" />
             </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <ProgressBar
+            android:id="@+id/progressLoad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+        <LinearLayout
+            android:id="@+id/errorState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvErrorMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/count_guided_load_error"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRetryLoad"
+                style="@style/App.Button.Ghost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/inventories_retry" />
         </LinearLayout>
-    </ScrollView>
+    </FrameLayout>
 </LinearLayout>

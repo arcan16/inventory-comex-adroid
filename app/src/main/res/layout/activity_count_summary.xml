@@ -7,75 +7,132 @@
     android:background="?android:attr/colorBackground">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         style="@style/App.Toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         app:navigationIcon="@drawable/ic_back"
         app:navigationIconTint="?attr/colorOnPrimary"
-        app:title="@string/count_summary_title"
-        app:subtitle="4 LTS · 04 ene 2024" />
+        app:title="@string/count_summary_title" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="12dp">
-        <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_summary_col_id" />
-        <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_summary_col_stock" />
-        <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_summary_col_count" />
-        <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_summary_col_diff" android:gravity="end" />
-    </LinearLayout>
-
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
         <LinearLayout
+            android:id="@+id/contentContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:visibility="gone">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/bg_field"
-                android:divider="@drawable/divider_line"
-                android:showDividers="middle">
-
-                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="?attr/colorOnSurface" android:textStyle="bold" android:text="10292" />
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1.200" />
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1.200" />
-                    <TextView style="@style/App.Chip.Good" android:layout_width="wrap_content" android:layout_height="wrap_content" android:drawableStart="@drawable/ic_check" android:text="0.000" />
-                </LinearLayout>
-
-                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="?attr/colorOnSurface" android:textStyle="bold" android:text="1100" />
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="5.000" />
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="4.500" />
-                    <TextView style="@style/App.Chip.Warn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:drawableStart="@drawable/ic_alert" android:text="−0.500" />
-                </LinearLayout>
-
-                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:textColor="?attr/colorOnSurface" android:textStyle="bold" android:text="11710" />
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2.000" />
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2.000" />
-                    <TextView style="@style/App.Chip.Good" android:layout_width="wrap_content" android:layout_height="wrap_content" android:drawableStart="@drawable/ic_check" android:text="0.000" />
-                </LinearLayout>
+                android:orientation="horizontal">
+                <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_summary_col_id" />
+                <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_summary_col_stock" />
+                <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_summary_col_count" />
+                <TextView style="@style/App.ListHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_summary_col_diff" />
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                style="@style/App.Button.Accent"
+            <FrameLayout
                 android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_marginTop="6dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_field"
+                    android:clipToPadding="false"
+                    android:paddingBottom="8dp" />
+
+                <TextView
+                    android:id="@+id/tvSummaryEmpty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:padding="16dp"
+                    android:text="@string/count_summary_empty"
+                    android:textAppearance="?attr/textAppearanceBodySmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <ProgressBar
+                android:id="@+id/progressLoadMore"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                app:icon="@drawable/ic_download"
-                app:iconGravity="textStart"
-                android:text="@string/count_summary_export" />
+                android:layout_gravity="center"
+                android:layout_marginVertical="8dp"
+                android:visibility="gone" />
         </LinearLayout>
-    </ScrollView>
+
+        <ProgressBar
+            android:id="@+id/progressLoad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+        <LinearLayout
+            android:id="@+id/errorState"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvErrorMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/count_summary_load_error"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRetryLoad"
+                style="@style/App.Button.Ghost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/inventories_retry" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_margin="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExport"
+            style="@style/App.Button.Accent"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:icon="@drawable/ic_download"
+            app:iconGravity="textStart"
+            android:text="@string/count_summary_export" />
+
+        <ProgressBar
+            android:id="@+id/progressExport"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginStart="12dp"
+            android:visibility="gone" />
+    </LinearLayout>
 </LinearLayout>

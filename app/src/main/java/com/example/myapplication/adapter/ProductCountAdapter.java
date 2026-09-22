@@ -3,6 +3,7 @@ package com.example.myapplication.adapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -16,13 +17,24 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Lista de solo lectura de los conteos ya registrados en el backend para este
- * inventario. Eliminar un renglon (DELETE /productCounts/{id}) todavia no
- * esta conectado - es el siguiente endpoint a implementar en esta pantalla.
+ * Lista de los conteos ya registrados en el backend para este inventario.
+ * Tocar un renglon carga su informacion en el formulario para editarla; el
+ * icono de bote de basura elimina el renglon (DELETE /productCounts/{id}).
  */
 public class ProductCountAdapter extends RecyclerView.Adapter<ProductCountAdapter.ViewHolder> {
 
+    public interface OnProductCountActionListener {
+        void onSelect(ProductCountEntryDTO entry);
+
+        void onDelete(ProductCountEntryDTO entry);
+    }
+
     private final List<ProductCountEntryDTO> items = new ArrayList<>();
+    private final OnProductCountActionListener listener;
+
+    public ProductCountAdapter(OnProductCountActionListener listener) {
+        this.listener = listener;
+    }
 
     public void setItems(List<ProductCountEntryDTO> newItems) {
         items.clear();
@@ -44,6 +56,8 @@ public class ProductCountAdapter extends RecyclerView.Adapter<ProductCountAdapte
         String productId = entry.getIdProduct() != null ? entry.getIdProduct().getId() : "";
         holder.tvProductId.setText(productId);
         holder.tvQuantity.setText(String.format(Locale.US, "%.3f", entry.getQuantity()));
+        holder.itemView.setOnClickListener(v -> listener.onSelect(entry));
+        holder.ivDelete.setOnClickListener(v -> listener.onDelete(entry));
     }
 
     @Override
@@ -54,11 +68,13 @@ public class ProductCountAdapter extends RecyclerView.Adapter<ProductCountAdapte
     static class ViewHolder extends RecyclerView.ViewHolder {
         final TextView tvProductId;
         final TextView tvQuantity;
+        final ImageView ivDelete;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
             tvProductId = itemView.findViewById(R.id.tvCountProductId);
             tvQuantity = itemView.findViewById(R.id.tvCountQuantity);
+            ivDelete = itemView.findViewById(R.id.ivDeleteCount);
         }
     }
 }

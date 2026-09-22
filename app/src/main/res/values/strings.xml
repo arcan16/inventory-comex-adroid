@@ -117,6 +117,15 @@
     <string name="count_error_unknown_product">Este código no está registrado en el catálogo de productos</string>
     <string name="count_error_quantity_required">Escribe la cantidad contada</string>
     <string name="count_error_quantity_positive">La cantidad debe ser mayor a 0</string>
+    <string name="count_delete_confirm_title">Eliminar conteo</string>
+    <string name="count_delete_confirm_message">¿Seguro que quieres eliminar el conteo de %1$s (%2$s)? Esta acción no se puede deshacer.</string>
+    <string name="count_deleted_toast">Conteo eliminado</string>
+    <string name="count_delete_error">No fue posible eliminar el conteo: %1$s</string>
+    <string name="count_update">Actualizar</string>
+    <string name="count_update_loading">Actualizando…</string>
+    <string name="count_update_success">Conteo actualizado</string>
+    <string name="count_update_error">No fue posible actualizar el conteo: %1$s</string>
+    <string name="count_update_partial_error">El conteo anterior se eliminó pero no se pudo crear el actualizado: %1$s. Vuelve a capturarlo.</string>
 
     <string-array name="product_location_labels">
         <item>Piso de venta</item>
@@ -134,6 +143,14 @@
     <string name="count_guided_description_label">Descripción</string>
     <string name="count_guided_btn_prev">‹ Anterior</string>
     <string name="count_guided_btn_next">Siguiente ›</string>
+    <string name="count_guided_btn_finish">Finalizar</string>
+    <string name="count_guided_btn_loading">Guardando…</string>
+    <string name="count_guided_quantity_hint">Cantidad contada</string>
+    <string name="count_guided_progress">Producto %1$d de %2$d</string>
+    <string name="count_guided_load_error">No fue posible cargar los productos del inventario</string>
+    <string name="count_guided_empty">Este inventario no tiene productos en stock para contar</string>
+    <string name="count_guided_save_error">No fue posible guardar el conteo: %1$s</string>
+    <string name="count_guided_finished_toast">Conteo guiado completado</string>
 
     <!-- Resumen de conteo -->
     <string name="count_summary_title">Resumen</string>
@@ -142,6 +159,13 @@
     <string name="count_summary_col_count">Conteo</string>
     <string name="count_summary_col_diff">Dif.</string>
     <string name="count_summary_export">Exportar PDF</string>
+    <string name="count_summary_export_loading">Generando PDF…</string>
+    <string name="count_summary_export_error">No fue posible generar el reporte: %1$s</string>
+    <string name="count_summary_export_open_chooser">Abrir reporte con</string>
+    <string name="count_summary_export_no_viewer">No hay una app instalada para abrir archivos PDF</string>
+    <string name="count_summary_empty">Todavía no hay conteos registrados</string>
+    <string name="count_summary_load_error">No fue posible cargar el resumen del inventario</string>
+    <string name="count_summary_load_more_error">No fue posible cargar mas elementos, desliza para reintentar</string>
 
     <!-- Reportes -->
     <string name="reports_title">Reportes</string>

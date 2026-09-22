@@ -1,14 +1,10 @@
 package com.example.myapplication.network;
 
-/**
- * "productsCount" dentro de GET /inventories/normal/{id} es la entidad cruda
- * ProductCountsEntity serializada (no un DTO), con idProduct e idInventory
- * anidados como el objeto completo. Solo mapeamos lo que usa esta pantalla;
- * Gson ignora el resto del JSON (idInventory completo, place, etc.).
- */
+/** Espejo de ProductCountsEntryDTO (backend): un renglon de "productsCount" dentro de GET /inventories/normal/{id}. */
 public class ProductCountEntryDTO {
     private long id;
     private float quantity;
+    private String place;
     private ProductRef idProduct;
 
     public long getId() {
@@ -17,6 +13,10 @@ public class ProductCountEntryDTO {
 
     public float getQuantity() {
         return quantity;
+    }
+
+    public String getPlace() {
+        return place;
     }
 
     public ProductRef getIdProduct() {

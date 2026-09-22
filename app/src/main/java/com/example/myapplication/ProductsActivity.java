@@ -2,9 +2,7 @@ package com.example.myapplication;
 
 import android.os.Bundle;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-public class ProductsActivity extends AppCompatActivity {
+public class ProductsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

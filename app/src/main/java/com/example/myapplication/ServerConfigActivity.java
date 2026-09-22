@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.myapplication.data.ServerPreferences;
 import com.example.myapplication.network.ApiClient;
@@ -29,7 +28,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ServerConfigActivity extends AppCompatActivity {
+public class ServerConfigActivity extends BaseActivity {
 
     private ServerPreferences serverPreferences;
 
