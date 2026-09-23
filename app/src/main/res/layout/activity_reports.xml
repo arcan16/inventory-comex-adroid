@@ -7,10 +7,11 @@
     android:background="?android:attr/colorBackground">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         style="@style/App.Toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        app:navigationIcon="@drawable/ic_menu"
+        app:navigationIcon="@drawable/ic_back"
         app:navigationIconTint="?attr/colorOnPrimary"
         app:title="@string/reports_title" />
 
@@ -24,36 +25,58 @@
         <TextView style="@style/App.ListHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/reports_col_presentation" />
     </LinearLayout>
 
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerReports"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="6dp"
+                android:paddingBottom="24dp" />
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+        <ProgressBar
+            android:id="@+id/progressLoad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
         <LinearLayout
+            android:id="@+id/emptyStateContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:orientation="vertical"
-            android:padding="16dp"
-            android:background="@drawable/bg_field"
-            android:divider="@drawable/divider_line"
-            android:showDividers="middle">
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
 
-            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                <TextView style="@style/App.ListRow.Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="04 ene 2024" />
-                <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="4 LTS" />
-            </LinearLayout>
-            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                <TextView style="@style/App.ListRow.Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="28 dic 2023" />
-                <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="19 LTS" />
-            </LinearLayout>
-            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                <TextView style="@style/App.ListRow.Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="15 dic 2023" />
-                <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1 LT" />
-            </LinearLayout>
-            <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                <TextView style="@style/App.ListRow.Title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="02 dic 2023" />
-                <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PIEZA" />
-            </LinearLayout>
+            <TextView
+                android:id="@+id/tvEmptyMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="@string/reports_empty"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRetry"
+                style="@style/App.Button.Ghost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/inventories_retry" />
         </LinearLayout>
-    </ScrollView>
+    </FrameLayout>
 </LinearLayout>

@@ -4,6 +4,9 @@
         android:id="@+id/action_guided_count"
         android:title="@string/inventories_menu_guided" />
     <item
+        android:id="@+id/action_close"
+        android:title="@string/inventories_menu_close" />
+    <item
         android:id="@+id/action_delete"
         android:title="@string/inventories_menu_delete" />
 </menu>

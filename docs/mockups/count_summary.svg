@@ -1,0 +1,67 @@
+<svg viewBox="0 0 320 660" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <clipPath id="screen-cs">
+      <rect x="8" y="8" width="304" height="644" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="660" rx="32" fill="#0B0F1A"/>
+
+  <g clip-path="url(#screen-cs)">
+    <rect x="8" y="8" width="304" height="644" fill="#F1F2F5"/>
+
+    <rect x="8" y="8" width="304" height="20" fill="#1E4FB8"/>
+    <text x="24" y="22" font-size="10" fill="#FFFFFF">9:41</text>
+
+    <rect x="8" y="28" width="304" height="60" fill="#1E4FB8"/>
+    <path d="M 30 58 l 8 -8 M 30 58 l 8 8" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <text x="50" y="60" font-size="15" font-weight="bold" fill="#FFFFFF">Resumen</text>
+    <text x="50" y="76" font-size="10" fill="#D7E2FA">4 LTS · 04 ene 2026</text>
+
+    <!-- export button -->
+    <rect x="24" y="100" width="272" height="40" rx="9" fill="#1E4FB8"/>
+    <rect x="145" y="112" width="12" height="10" fill="none" stroke="#FFFFFF" stroke-width="1.4"/>
+    <path d="M 151 112 v 8 m -3 -3 l 3 3 l 3 -3" fill="none" stroke="#FFFFFF" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="165" y="124" font-size="12" font-weight="bold" fill="#FFFFFF">Exportar PDF</text>
+
+    <!-- headers -->
+    <text x="24" y="160" font-size="9" letter-spacing="1" fill="#5C6A82">ID</text>
+    <text x="120" y="160" font-size="9" letter-spacing="1" fill="#5C6A82">STOCK</text>
+    <text x="190" y="160" font-size="9" letter-spacing="1" fill="#5C6A82">CONTEO</text>
+    <text x="296" y="160" text-anchor="end" font-size="9" letter-spacing="1" fill="#5C6A82">DIF.</text>
+
+    <rect x="16" y="170" width="288" height="220" rx="12" fill="#FFFFFF" stroke="#D8DCE4"/>
+
+    <line x1="24" y1="170" x2="24" y2="170" stroke="none"/>
+    <text x="32" y="196" font-size="11.5" font-family="monospace" fill="#14203A">10292</text>
+    <text x="120" y="196" font-size="11.5" fill="#14203A">1.200</text>
+    <text x="190" y="196" font-size="11.5" fill="#14203A">1.200</text>
+    <text x="288" y="196" text-anchor="end" font-size="11.5" font-weight="bold" fill="#5C6A82">+0.000</text>
+    <line x1="24" y1="207" x2="296" y2="207" stroke="#EEF0F3"/>
+
+    <text x="32" y="230" font-size="11.5" font-family="monospace" fill="#14203A">1100</text>
+    <text x="120" y="230" font-size="11.5" fill="#14203A">5.000</text>
+    <text x="190" y="230" font-size="11.5" fill="#14203A">4.800</text>
+    <text x="288" y="230" text-anchor="end" font-size="11.5" font-weight="bold" fill="#C43B3B">-0.200</text>
+    <line x1="24" y1="241" x2="296" y2="241" stroke="#EEF0F3"/>
+
+    <text x="32" y="264" font-size="11.5" font-family="monospace" fill="#14203A">11710</text>
+    <text x="120" y="264" font-size="11.5" fill="#14203A">2.000</text>
+    <text x="190" y="264" font-size="11.5" fill="#14203A">2.500</text>
+    <text x="288" y="264" text-anchor="end" font-size="11.5" font-weight="bold" fill="#1F8A57">+0.500</text>
+    <line x1="24" y1="275" x2="296" y2="275" stroke="#EEF0F3"/>
+
+    <text x="32" y="298" font-size="11.5" font-family="monospace" fill="#14203A">11801</text>
+    <text x="120" y="298" font-size="11.5" fill="#14203A">1.000</text>
+    <text x="190" y="298" font-size="11.5" fill="#14203A">1.000</text>
+    <text x="288" y="298" text-anchor="end" font-size="11.5" font-weight="bold" fill="#5C6A82">+0.000</text>
+    <line x1="24" y1="309" x2="296" y2="309" stroke="#EEF0F3"/>
+
+    <text x="32" y="332" font-size="11.5" font-family="monospace" fill="#14203A">11901</text>
+    <text x="120" y="332" font-size="11.5" fill="#14203A">3.000</text>
+    <text x="190" y="332" font-size="11.5" fill="#14203A">2.900</text>
+    <text x="288" y="332" text-anchor="end" font-size="11.5" font-weight="bold" fill="#C43B3B">-0.100</text>
+  </g>
+
+  <rect x="4" y="4" width="312" height="652" rx="30" fill="none" stroke="#1a1f2b" stroke-width="4"/>
+</svg>

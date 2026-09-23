@@ -7,6 +7,7 @@
     android:background="?android:attr/colorBackground">
 
     <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
         style="@style/App.Toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
@@ -14,71 +15,78 @@
         app:navigationIconTint="?attr/colorOnPrimary"
         app:title="@string/stock_summary_title" />
 
-    <ScrollView
+    <LinearLayout
+        style="@style/App.Field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_search"
+            app:tint="?attr/colorOnSurfaceVariant"
+            android:contentDescription="@string/stock_summary_filter_hint" />
+        <EditText
+            android:id="@+id/etFilter"
+            style="@style/App.Field.Value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:padding="0dp"
+            android:minHeight="0dp"
+            android:hint="@string/stock_summary_filter_hint"
+            android:inputType="textCapCharacters"
+            android:maxLines="1" />
+    </LinearLayout>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerStock"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingHorizontal="16dp"
+            android:paddingBottom="24dp" />
+
+        <ProgressBar
+            android:id="@+id/progressLoad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
         <LinearLayout
+            android:id="@+id/emptyStateContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:gravity="center"
+            android:padding="32dp"
+            android:visibility="gone">
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <TextView
+                android:id="@+id/tvEmptyMessage"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="@drawable/bg_field"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="10dp">
-                <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
-                    android:layout_marginEnd="8dp"
-                    android:src="@drawable/ic_search"
-                    app:tint="?attr/colorOnSurfaceVariant"
-                    android:contentDescription="@null" />
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/stock_summary_filter_hint"
-                    android:textColor="?attr/colorOnSurfaceVariant"
-                    android:textAppearance="?attr/textAppearanceBodySmall" />
-            </LinearLayout>
+                android:gravity="center"
+                android:text="@string/stock_summary_empty"
+                android:textAppearance="?attr/textAppearanceBodyMedium"
+                android:textColor="?attr/colorOnSurfaceVariant" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRetry"
+                style="@style/App.Button.Ghost"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="12dp"
-                android:background="@drawable/bg_field"
-                android:divider="@drawable/divider_line"
-                android:showDividers="middle">
-
-                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="10292" />
-                        <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="THINNER E" />
-                    </LinearLayout>
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1.200" />
-                </LinearLayout>
-                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="1100" />
-                        <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="REAL FLEX BLANCO" />
-                    </LinearLayout>
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="5.000" />
-                </LinearLayout>
-                <LinearLayout style="@style/App.ListRow" android:layout_width="match_parent" android:layout_height="wrap_content">
-                    <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                        <TextView style="@style/App.ListRow.Title" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="11710" />
-                        <TextView style="@style/App.ListRow.Subtitle" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RESISTOL 5000 4 L" />
-                    </LinearLayout>
-                    <TextView style="@style/App.ListRow.Trail" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="2.000" />
-                </LinearLayout>
-            </LinearLayout>
+                android:layout_marginTop="14dp"
+                android:text="@string/inventories_retry" />
         </LinearLayout>
-    </ScrollView>
+    </FrameLayout>
 </LinearLayout>

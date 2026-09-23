@@ -15,10 +15,11 @@
         android:paddingHorizontal="32dp"
         android:paddingVertical="48dp">
 
-        <View
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:background="@drawable/bg_badge_primary" />
+        <ImageView
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:src="@drawable/logo_comex"
+            android:contentDescription="@string/login_app_title" />
 
         <TextView
             android:layout_width="wrap_content"

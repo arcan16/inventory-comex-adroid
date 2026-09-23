@@ -63,17 +63,36 @@
                     android:layout_marginTop="12dp">
                     <LinearLayout style="@style/App.Field" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="8dp">
                         <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_code_label" />
-                        <EditText
-                            android:id="@+id/etCode"
-                            style="@style/App.Field.Value"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:background="@null"
-                            android:padding="0dp"
-                            android:minHeight="0dp"
-                            android:inputType="number"
-                            android:maxLines="1"
-                            android:imeOptions="actionNext" />
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+                            <EditText
+                                android:id="@+id/etCode"
+                                style="@style/App.Field.Value"
+                                android:layout_width="0dp"
+                                android:layout_weight="1"
+                                android:layout_height="wrap_content"
+                                android:background="@null"
+                                android:padding="0dp"
+                                android:minHeight="0dp"
+                                android:inputType="number"
+                                android:maxLines="1"
+                                android:imeOptions="actionNext" />
+                            <ImageView
+                                android:id="@+id/btnSearchProduct"
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_marginStart="6dp"
+                                android:padding="2dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_search"
+                                app:tint="?attr/colorOnSurfaceVariant"
+                                android:contentDescription="@string/count_search_product" />
+                        </LinearLayout>
                     </LinearLayout>
                     <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
                         <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_stock_label" />
@@ -90,6 +109,28 @@
                     android:visibility="gone"
                     tools:visibility="visible"
                     tools:text="THINNER E" />
+
+                <LinearLayout
+                    android:id="@+id/newProductContainer"
+                    style="@style/App.Field"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+                    <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_new_product_description_label" />
+                    <EditText
+                        android:id="@+id/etNewProductDescription"
+                        style="@style/App.Field.Value"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:padding="0dp"
+                        android:minHeight="0dp"
+                        android:inputType="textCapCharacters"
+                        android:maxLines="1"
+                        android:imeOptions="actionNext" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -144,6 +185,16 @@
                         android:layout_marginEnd="8dp"
                         android:text="@string/count_add" />
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnRegisterNewProduct"
+                        style="@style/App.Button.Primary"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:visibility="gone"
+                        tools:visibility="visible"
+                        android:text="@string/count_register_new_product" />
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnCancel"
                         style="@style/App.Button.Ghost"
                         android:layout_width="0dp"
@@ -160,10 +211,48 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    style="@style/App.Field"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        android:contentDescription="@string/count_search_registered_hint" />
+                    <EditText
+                        android:id="@+id/etSearchCount"
+                        style="@style/App.Field.Value"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:padding="0dp"
+                        android:minHeight="0dp"
+                        android:hint="@string/count_search_registered_hint"
+                        android:inputType="textCapCharacters"
+                        android:maxLines="1" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvSearchCountResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:text="3 registros encontrados" />
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="18dp">
+                    android:layout_marginTop="10dp">
                     <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_col_id" />
                     <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_col_quantity" />
                     <TextView style="@style/App.ListHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_col_action" />

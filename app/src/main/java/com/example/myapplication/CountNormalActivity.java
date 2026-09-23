@@ -1,8 +1,10 @@
 package com.example.myapplication;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -14,6 +16,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,6 +29,8 @@ import com.example.myapplication.data.ServerPreferences;
 import com.example.myapplication.data.SessionPreferences;
 import com.example.myapplication.network.ApiClient;
 import com.example.myapplication.network.ApiErrorUtils;
+import com.example.myapplication.network.CreateProductCountRequest;
+import com.example.myapplication.network.CreateProductCountResultDTO;
 import com.example.myapplication.network.InventoriesApi;
 import com.example.myapplication.network.NewProductCountRequest;
 import com.example.myapplication.network.NormalInventoryDataDTO;
@@ -37,6 +44,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -55,6 +63,9 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     private static final String[] PLACE_API_VALUES = {"SALES_AREA", "WAREHOUSE", "STORAGE_AREA", "NOTE"};
     private static final int PLACE_DEFAULT_INDEX = 1; // WAREHOUSE / "Almacén"
 
+    private final ActivityResultLauncher<Intent> productPicker =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::onProductPicked);
+
     private ServerPreferences serverPreferences;
     private SessionPreferences sessionPreferences;
 
@@ -62,6 +73,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     private List<ProductDTO> products = Collections.emptyList();
     private List<StockItemDTO> stock = Collections.emptyList();
     private List<ProductCountEntryDTO> productCounts = Collections.emptyList();
+    private String currentCountSearch = "";
     private float existingDifference;
     private boolean isDeletingCount;
     private ProductCountEntryDTO editingEntry;
@@ -74,12 +86,17 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     private EditText etCode;
     private TextView tvStockValue;
     private TextView tvProductDescription;
+    private View newProductContainer;
+    private EditText etNewProductDescription;
     private EditText etQuantity;
     private TextView tvDifference;
     private Spinner spinnerPlace;
     private MaterialButton btnAdd;
+    private MaterialButton btnRegisterNewProduct;
     private MaterialButton btnCancel;
     private View progressAdd;
+    private EditText etSearchCount;
+    private TextView tvSearchCountResult;
     private RecyclerView recyclerProductCounts;
     private TextView tvCountsEmpty;
     private ProductCountAdapter adapter;
@@ -109,14 +126,24 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         etCode = findViewById(R.id.etCode);
         tvStockValue = findViewById(R.id.tvStockValue);
         tvProductDescription = findViewById(R.id.tvProductDescription);
+        newProductContainer = findViewById(R.id.newProductContainer);
+        etNewProductDescription = findViewById(R.id.etNewProductDescription);
         etQuantity = findViewById(R.id.etQuantity);
         tvDifference = findViewById(R.id.tvDifference);
         spinnerPlace = findViewById(R.id.spinnerPlace);
         btnAdd = findViewById(R.id.btnAdd);
+        btnRegisterNewProduct = findViewById(R.id.btnRegisterNewProduct);
         btnCancel = findViewById(R.id.btnCancel);
         progressAdd = findViewById(R.id.progressAdd);
+        etSearchCount = findViewById(R.id.etSearchCount);
+        tvSearchCountResult = findViewById(R.id.tvSearchCountResult);
         recyclerProductCounts = findViewById(R.id.recyclerProductCounts);
         tvCountsEmpty = findViewById(R.id.tvCountsEmpty);
+
+        InputFilter[] uppercaseFilter = {new InputFilter.AllCaps()};
+        etCode.setFilters(uppercaseFilter);
+        etNewProductDescription.setFilters(uppercaseFilter);
+        etSearchCount.setFilters(uppercaseFilter);
 
         ArrayAdapter<CharSequence> placeAdapter = ArrayAdapter.createFromResource(
                 this, R.array.product_location_labels, android.R.layout.simple_spinner_item);
@@ -134,7 +161,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
             }
             etCode.setInputType(checkedId == R.id.btnToggleNumber
                     ? InputType.TYPE_CLASS_NUMBER
-                    : InputType.TYPE_CLASS_TEXT);
+                    : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
             resetForm();
         });
 
@@ -165,10 +192,29 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
             }
         });
 
+        etSearchCount.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                currentCountSearch = s.toString().trim();
+                applyCountSearchFilter();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
+        });
+
         btnAdd.setOnClickListener(v -> addProductCount());
+        btnRegisterNewProduct.setOnClickListener(v -> registerNewProduct());
         btnCancel.setOnClickListener(v -> resetForm());
         findViewById(R.id.btnRetryLoad).setOnClickListener(v -> loadData());
         findViewById(R.id.btnSummary).setOnClickListener(v -> openSummary(presentation, dateIso));
+        findViewById(R.id.btnSearchProduct).setOnClickListener(v ->
+                productPicker.launch(new Intent(this, ProductPickerActivity.class)));
 
         loadData();
     }
@@ -204,11 +250,14 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
                 if (response.isSuccessful() && response.body() != null) {
                     products = response.body().getProducts();
                     stock = response.body().getStock();
+                    // El backend regresa los conteos en orden de insercion (mas viejo primero);
+                    // se invierte para que el ultimo producto agregado aparezca al inicio.
                     productCounts = response.body().getProductsCount();
+                    Collections.reverse(productCounts);
 
-                    adapter.setItems(productCounts);
-                    tvCountsEmpty.setVisibility(productCounts.isEmpty() ? View.VISIBLE : View.GONE);
+                    applyCountSearchFilter();
                     contentScroll.setVisibility(View.VISIBLE);
+                    etCode.requestFocus();
                 } else {
                     showError(getString(R.string.count_normal_load_error));
                 }
@@ -220,6 +269,46 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
                 showError(getString(R.string.count_normal_load_error));
             }
         });
+    }
+
+    /**
+     * Filtra la lista de conteos ya registrados (productCounts) por codigo o
+     * descripcion, para saber cuantos renglones existen ya de un producto
+     * especifico sin tener que contarlos a ojo en una lista larga. Se vuelve a
+     * aplicar cada vez que se recarga la lista para que la busqueda activa
+     * sobreviva a un alta/edicion/borrado.
+     */
+    private void applyCountSearchFilter() {
+        List<ProductCountEntryDTO> filtered;
+        if (TextUtils.isEmpty(currentCountSearch)) {
+            filtered = productCounts;
+            tvSearchCountResult.setVisibility(View.GONE);
+        } else {
+            filtered = new ArrayList<>();
+            String needle = currentCountSearch.toLowerCase(Locale.getDefault());
+            for (ProductCountEntryDTO entry : productCounts) {
+                String code = entry.getIdProduct() != null ? entry.getIdProduct().getId() : null;
+                String description = entry.getIdProduct() != null ? entry.getIdProduct().getDescription() : null;
+                boolean matchesCode = code != null && code.toLowerCase(Locale.getDefault()).contains(needle);
+                boolean matchesDescription = description != null && description.toLowerCase(Locale.getDefault()).contains(needle);
+                if (matchesCode || matchesDescription) {
+                    filtered.add(entry);
+                }
+            }
+            tvSearchCountResult.setText(getResources().getQuantityString(
+                    R.plurals.count_search_results, filtered.size(), filtered.size()));
+            tvSearchCountResult.setVisibility(View.VISIBLE);
+        }
+
+        adapter.setItems(filtered);
+        if (filtered.isEmpty()) {
+            tvCountsEmpty.setText(TextUtils.isEmpty(currentCountSearch)
+                    ? R.string.count_normal_no_counts_yet
+                    : R.string.count_search_no_results);
+            tvCountsEmpty.setVisibility(View.VISIBLE);
+        } else {
+            tvCountsEmpty.setVisibility(View.GONE);
+        }
     }
 
     private void openSummary(String presentation, String dateIso) {
@@ -256,23 +345,60 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         refreshDifferenceDisplay();
     }
 
+    /**
+     * Resultado de ProductPickerActivity: el codigo del envase puede ser
+     * ilegible durante el conteo fisico, asi que se permite buscar el
+     * producto por nombre y cargar aqui el codigo elegido.
+     */
+    private void onProductPicked(ActivityResult result) {
+        if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) {
+            return;
+        }
+        String productId = result.getData().getStringExtra(ProductPickerActivity.EXTRA_PRODUCT_ID);
+        if (TextUtils.isEmpty(productId)) {
+            return;
+        }
+        etCode.setText(productId);
+        performLookup();
+        etQuantity.requestFocus();
+    }
+
     /** Muestra el stock esperado y la descripcion del producto con el codigo dado. */
     private void updateStockDisplay(String code) {
         StockItemDTO stockMatch = findStockMatch(code);
+        boolean known;
         if (stockMatch != null) {
             tvStockValue.setText(String.format(Locale.US, "%.3f", stockMatch.getStock()));
             tvProductDescription.setText(stockMatch.getDescription());
+            known = true;
         } else {
             ProductDTO productMatch = findProductMatch(code);
             if (productMatch != null) {
                 tvStockValue.setText(String.format(Locale.US, "%.3f", 0f));
                 tvProductDescription.setText(productMatch.getDescription());
+                known = true;
             } else {
                 tvStockValue.setText("");
                 tvProductDescription.setText(R.string.count_normal_unknown_code);
+                known = false;
             }
         }
         tvProductDescription.setVisibility(View.VISIBLE);
+        setUnknownProductUiVisible(!known);
+    }
+
+    /**
+     * Alterna entre el boton normal de "Agregar" y el flujo de alta de un producto
+     * encontrado fisicamente pero no registrado en el catalogo por error humano.
+     */
+    private void setUnknownProductUiVisible(boolean unknown) {
+        newProductContainer.setVisibility(unknown ? View.VISIBLE : View.GONE);
+        btnRegisterNewProduct.setVisibility(unknown ? View.VISIBLE : View.GONE);
+        btnAdd.setVisibility(unknown ? View.GONE : View.VISIBLE);
+        if (!unknown) {
+            etNewProductDescription.setText("");
+            etNewProductDescription.setError(null);
+        }
     }
 
     /**
@@ -412,6 +538,85 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     }
 
     /**
+     * Da de alta en el catalogo un producto encontrado en el conteo fisico pero
+     * que no fue registrado por error humano, y crea su renglon de conteo en la
+     * misma llamada (POST /productCounts/createProductAddCount).
+     */
+    private void registerNewProduct() {
+        String code = etCode.getText().toString().trim();
+        if (TextUtils.isEmpty(code)) {
+            etCode.setError(getString(R.string.count_error_code_required));
+            etCode.requestFocus();
+            return;
+        }
+
+        String description = etNewProductDescription.getText().toString().trim();
+        if (TextUtils.isEmpty(description)) {
+            etNewProductDescription.setError(getString(R.string.count_error_description_required));
+            etNewProductDescription.requestFocus();
+            return;
+        }
+
+        String quantityText = etQuantity.getText().toString().trim();
+        if (TextUtils.isEmpty(quantityText)) {
+            etQuantity.setError(getString(R.string.count_error_quantity_required));
+            etQuantity.requestFocus();
+            return;
+        }
+
+        float quantity;
+        try {
+            quantity = Float.parseFloat(quantityText.replace(',', '.'));
+        } catch (NumberFormatException e) {
+            etQuantity.setError(getString(R.string.count_error_quantity_required));
+            return;
+        }
+        if (quantity <= 0) {
+            etQuantity.setError(getString(R.string.count_error_quantity_positive));
+            return;
+        }
+
+        String place = PLACE_API_VALUES[spinnerPlace.getSelectedItemPosition()];
+
+        setAddLoadingState(true);
+
+        ProductCountsApi api = ApiClient.createProductCountsApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+
+        api.createProductAddCount(new CreateProductCountRequest(inventoryId, code, description, quantity, place))
+                .enqueue(new Callback<CreateProductCountResultDTO>() {
+                    @Override
+                    public void onResponse(@NonNull Call<CreateProductCountResultDTO> call,
+                                            @NonNull Response<CreateProductCountResultDTO> response) {
+                        setAddLoadingState(false);
+
+                        if (response.code() == 401) {
+                            handleSessionExpired();
+                            return;
+                        }
+
+                        if (response.isSuccessful() && response.body() != null) {
+                            Toast.makeText(CountNormalActivity.this, R.string.count_register_new_product_success, Toast.LENGTH_SHORT).show();
+                            resetForm();
+                            loadData();
+                        } else {
+                            Toast.makeText(CountNormalActivity.this,
+                                    getString(R.string.count_register_new_product_error, ApiErrorUtils.parseErrorMessage(response)),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<CreateProductCountResultDTO> call, @NonNull Throwable t) {
+                        setAddLoadingState(false);
+                        String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                        Toast.makeText(CountNormalActivity.this,
+                                getString(R.string.count_register_new_product_error, reason), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    /**
      * El backend no tiene un endpoint de actualizacion para /productCounts, asi
      * que "actualizar" un renglon se implementa eliminando el registro original
      * y creando uno nuevo con los valores capturados.
@@ -494,11 +699,14 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
 
     private void setAddLoadingState(boolean loading) {
         btnAdd.setEnabled(!loading);
+        btnRegisterNewProduct.setEnabled(!loading);
         btnCancel.setEnabled(!loading);
         if (loading) {
             btnAdd.setText(editingEntry != null ? R.string.count_update_loading : R.string.count_add_loading);
+            btnRegisterNewProduct.setText(R.string.count_register_new_product_loading);
         } else {
             updateAddButtonLabel();
+            btnRegisterNewProduct.setText(R.string.count_register_new_product);
         }
         progressAdd.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
@@ -512,6 +720,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         etQuantity.setText("");
         tvDifference.setText("");
         existingDifference = 0f;
+        setUnknownProductUiVisible(false);
         etCode.requestFocus();
     }
 
@@ -581,6 +790,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
                         resetForm();
                     }
                     loadData();
+                    etCode.requestFocus();
                 } else {
                     Toast.makeText(CountNormalActivity.this,
                             getString(R.string.count_delete_error, ApiErrorUtils.parseErrorMessage(response)),

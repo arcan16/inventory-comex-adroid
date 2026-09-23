@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/App.ListRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvDate"
+            style="@style/App.ListRow.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="04 ene 2024" />
+
+        <TextView
+            android:id="@+id/tvPresentation"
+            style="@style/App.ListRow.Subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="4 LTS" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/progressDownload"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:layout_marginEnd="8dp"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/ivDownload"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:src="@drawable/ic_download"
+        app:tint="?attr/colorOnSurfaceVariant"
+        android:contentDescription="@string/reports_download_action" />
+</LinearLayout>

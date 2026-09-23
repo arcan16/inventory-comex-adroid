@@ -1,5 +1,7 @@
 package com.example.myapplication.network;
 
+import java.util.List;
+
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -13,6 +15,12 @@ import retrofit2.http.Streaming;
 public interface ProductCountsApi {
     @POST("productCounts")
     Call<ProductCountCreatedDTO> addProductCount(@Body NewProductCountRequest request);
+
+    @GET("productCounts/allReports")
+    Call<List<ReportDTO>> getAllReports();
+
+    @POST("productCounts/createProductAddCount")
+    Call<CreateProductCountResultDTO> createProductAddCount(@Body CreateProductCountRequest request);
 
     @DELETE("productCounts/{id}")
     Call<Void> deleteProductCount(@Path("id") long id);

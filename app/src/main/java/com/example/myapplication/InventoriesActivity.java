@@ -140,11 +140,66 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
 
     @Override
     public void onOpenNormalCount(InventoryDTO inventory) {
+        if ("LOCKED".equals(inventory.getStatus())) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.inventories_locked_title)
+                    .setMessage(getString(R.string.inventories_locked_message, inventory.getPresentation()))
+                    .setPositiveButton(R.string.action_accept, null)
+                    .show();
+            return;
+        }
+
+        if ("CLOSED".equals(inventory.getStatus())) {
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.inventories_closed_open_title)
+                    .setMessage(getString(R.string.inventories_closed_open_message, inventory.getPresentation()))
+                    .setPositiveButton(R.string.inventories_reopen_confirm, (dialog, which) -> reopenInventory(inventory))
+                    .setNegativeButton(R.string.action_cancel, null)
+                    .show();
+            return;
+        }
+
+        openNormalCount(inventory);
+    }
+
+    private void openNormalCount(InventoryDTO inventory) {
         Intent intent = new Intent(this, CountNormalActivity.class);
         intent.putExtra(CountNormalActivity.EXTRA_INVENTORY_ID, inventory.getId());
         intent.putExtra(CountNormalActivity.EXTRA_PRESENTATION, inventory.getPresentation());
         intent.putExtra(CountNormalActivity.EXTRA_DATE, inventory.getDate());
         startActivity(intent);
+    }
+
+    private void reopenInventory(InventoryDTO inventory) {
+        InventoriesApi api = ApiClient.createInventoriesApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+
+        api.reopenInventory(inventory.getId()).enqueue(new Callback<InventoryDTO>() {
+            @Override
+            public void onResponse(@NonNull Call<InventoryDTO> call, @NonNull Response<InventoryDTO> response) {
+                if (response.code() == 401) {
+                    handleSessionExpired();
+                    return;
+                }
+                if (response.isSuccessful()) {
+                    Toast.makeText(InventoriesActivity.this, R.string.inventories_reopened_toast, Toast.LENGTH_SHORT).show();
+                    loadInventories(false);
+                    openNormalCount(inventory);
+                } else {
+                    Toast.makeText(InventoriesActivity.this,
+                            getString(R.string.inventories_reopen_error, "HTTP " + response.code()),
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<InventoryDTO> call, @NonNull Throwable t) {
+                String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                Toast.makeText(InventoriesActivity.this,
+                        getString(R.string.inventories_reopen_error, reason),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
@@ -154,6 +209,47 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
         intent.putExtra(CountGuidedActivity.EXTRA_PRESENTATION, inventory.getPresentation());
         intent.putExtra(CountGuidedActivity.EXTRA_DATE, inventory.getDate());
         startActivity(intent);
+    }
+
+    @Override
+    public void onClose(InventoryDTO inventory) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.inventories_close_confirm_title)
+                .setMessage(getString(R.string.inventories_close_confirm_message, inventory.getPresentation()))
+                .setPositiveButton(R.string.inventories_menu_close, (dialog, which) -> closeInventory(inventory))
+                .setNegativeButton(R.string.action_cancel, null)
+                .show();
+    }
+
+    private void closeInventory(InventoryDTO inventory) {
+        InventoriesApi api = ApiClient.createInventoriesApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+
+        api.closeInventory(inventory.getId()).enqueue(new Callback<InventoryDTO>() {
+            @Override
+            public void onResponse(@NonNull Call<InventoryDTO> call, @NonNull Response<InventoryDTO> response) {
+                if (response.code() == 401) {
+                    handleSessionExpired();
+                    return;
+                }
+                if (response.isSuccessful()) {
+                    Toast.makeText(InventoriesActivity.this, R.string.inventories_closed_toast, Toast.LENGTH_SHORT).show();
+                    loadInventories(false);
+                } else {
+                    Toast.makeText(InventoriesActivity.this,
+                            getString(R.string.inventories_close_error, "HTTP " + response.code()),
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<InventoryDTO> call, @NonNull Throwable t) {
+                String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                Toast.makeText(InventoriesActivity.this,
+                        getString(R.string.inventories_close_error, reason),
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

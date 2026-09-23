@@ -16,6 +16,13 @@ import androidx.core.view.WindowInsetsCompat;
  * reserva ese espacio. Aqui se habilita edge-to-edge explicitamente en todas
  * las versiones (para tener un solo comportamiento consistente) y se aplica
  * el padding de los system bars al contenido de cada pantalla.
+ *
+ * Con decorFitsSystemWindows en false (lo que activa EdgeToEdge.enable), el
+ * teclado tambien pasa a dibujarse por encima del contenido en vez de
+ * encogerlo, asi que ademas de systemBars() se pide el inset de ime(): al
+ * combinarlos, el padding inferior crece mientras el teclado esta visible y
+ * los ScrollView/RecyclerView de cada pantalla tienen espacio real para
+ * desplazarse por encima de el en lugar de quedar tapados.
  */
 public abstract class BaseActivity extends AppCompatActivity {
 
@@ -34,8 +41,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     private void applySystemBarsPadding() {
         View content = findViewById(android.R.id.content);
         ViewCompat.setOnApplyWindowInsetsListener(content, (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.ime());
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return insets;
         });
     }

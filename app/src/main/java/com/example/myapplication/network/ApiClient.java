@@ -46,6 +46,14 @@ public final class ApiClient {
         return create(baseUrl, ProductCountsApi.class, token, DEFAULT_TIMEOUT_SECONDS);
     }
 
+    public static ProductsApi createProductsApi(String baseUrl, String token) {
+        return create(baseUrl, ProductsApi.class, token, DEFAULT_TIMEOUT_SECONDS);
+    }
+
+    public static StockApi createStockApi(String baseUrl, String token) {
+        return create(baseUrl, StockApi.class, token, DEFAULT_TIMEOUT_SECONDS);
+    }
+
     private static <T> T create(String baseUrl, Class<T> service, String token, long timeoutSeconds) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(baseUrl)

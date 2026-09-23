@@ -39,6 +39,7 @@
         <activity android:name=".CountSummaryActivity" android:exported="false" />
         <activity android:name=".ReportsActivity" android:exported="false" />
         <activity android:name=".ProductsActivity" android:exported="false" />
+        <activity android:name=".ProductPickerActivity" android:exported="false" />
         <activity android:name=".StockActivity" android:exported="false" />
         <activity android:name=".StockTypeActivity" android:exported="false" />
         <activity android:name=".StockSummaryActivity" android:exported="false" />

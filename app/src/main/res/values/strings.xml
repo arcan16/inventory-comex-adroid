@@ -67,6 +67,7 @@
     <string name="inventories_col_presentation">Presentación</string>
     <string name="inventories_col_date">Fecha</string>
     <string name="inventories_menu_guided">Conteo guiado</string>
+    <string name="inventories_menu_close">Cerrar inventario</string>
     <string name="inventories_menu_delete">Eliminar</string>
     <string name="inventories_empty">No hay inventarios registrados</string>
     <string name="inventories_load_error">No fue posible cargar los inventarios</string>
@@ -75,6 +76,22 @@
     <string name="inventories_delete_confirm_message">¿Seguro que quieres eliminar el inventario %1$s? Esta acción no se puede deshacer.</string>
     <string name="inventories_deleted_toast">Inventario eliminado</string>
     <string name="inventories_delete_error">No fue posible eliminar el inventario: %1$s</string>
+    <string name="inventories_close_confirm_title">Cerrar inventario</string>
+    <string name="inventories_close_confirm_message">¿Seguro que quieres cerrar el inventario %1$s? Ya no se podrán registrar más conteos en él.</string>
+    <string name="inventories_closed_toast">Inventario cerrado</string>
+    <string name="inventories_close_error">No fue posible cerrar el inventario: %1$s</string>
+    <string name="inventories_status_opened">Abierto</string>
+    <string name="inventories_status_locked">Bloqueado</string>
+    <string name="inventories_status_pending">Pendiente</string>
+    <string name="inventories_status_closed">Cerrado</string>
+    <string name="inventories_closed_open_title">Inventario cerrado</string>
+    <string name="inventories_closed_open_message">El inventario %1$s está cerrado. ¿Deseas abrirlo nuevamente?</string>
+    <string name="inventories_reopen_confirm">Abrir de nuevo</string>
+    <string name="inventories_reopened_toast">Inventario reabierto</string>
+    <string name="inventories_reopen_error">No fue posible reabrir el inventario: %1$s</string>
+    <string name="inventories_locked_title">Inventario bloqueado</string>
+    <string name="inventories_locked_message">El inventario %1$s no se puede abrir porque se está utilizando en este momento.</string>
+    <string name="action_accept">Entendido</string>
     <string name="inventories_session_expired">Tu sesión expiró, inicia sesión de nuevo</string>
 
     <!-- Cargar inventario -->
@@ -97,6 +114,7 @@
     <string name="toggle_number">Número</string>
     <string name="toggle_text">Texto</string>
     <string name="count_code_label">Código</string>
+    <string name="count_search_product">Buscar producto por nombre</string>
     <string name="count_stock_label">Stock</string>
     <string name="count_quantity_label">Cantidad</string>
     <string name="count_difference_label">Diferencia</string>
@@ -108,6 +126,12 @@
     <string name="count_col_action">Acción</string>
     <string name="count_normal_unknown_code">El código no se encuentra registrado</string>
     <string name="count_normal_no_counts_yet">Todavía no hay conteos registrados</string>
+    <string name="count_search_registered_hint">Buscar en conteos registrados</string>
+    <string name="count_search_no_results">Ningún conteo coincide con la búsqueda</string>
+    <plurals name="count_search_results">
+        <item quantity="one">%d registro encontrado</item>
+        <item quantity="other">%d registros encontrados</item>
+    </plurals>
     <string name="count_normal_load_error">No fue posible cargar los datos del inventario</string>
     <string name="count_place_label">Lugar</string>
     <string name="count_add_loading">Agregando…</string>
@@ -126,6 +150,12 @@
     <string name="count_update_success">Conteo actualizado</string>
     <string name="count_update_error">No fue posible actualizar el conteo: %1$s</string>
     <string name="count_update_partial_error">El conteo anterior se eliminó pero no se pudo crear el actualizado: %1$s. Vuelve a capturarlo.</string>
+    <string name="count_new_product_description_label">Descripción del producto nuevo</string>
+    <string name="count_register_new_product">Registrar y contar</string>
+    <string name="count_register_new_product_loading">Registrando…</string>
+    <string name="count_error_description_required">Escribe la descripción del producto</string>
+    <string name="count_register_new_product_success">Producto registrado y agregado al conteo</string>
+    <string name="count_register_new_product_error">No fue posible registrar el producto: %1$s</string>
 
     <string-array name="product_location_labels">
         <item>Piso de venta</item>
@@ -171,10 +201,23 @@
     <string name="reports_title">Reportes</string>
     <string name="reports_col_date">Fecha</string>
     <string name="reports_col_presentation">Presentación</string>
+    <string name="reports_download_action">Descargar reporte</string>
+    <string name="reports_empty">Todavía no hay reportes disponibles</string>
+    <string name="reports_load_error">No fue posible cargar los reportes</string>
+    <string name="reports_download_error">No fue posible generar el reporte: %1$s</string>
+    <string name="reports_download_open_chooser">Abrir reporte con</string>
+    <string name="reports_download_no_viewer">No hay una app instalada para abrir archivos PDF</string>
 
     <!-- Productos -->
     <string name="products_title">Productos</string>
+    <string name="product_picker_title">Buscar producto</string>
     <string name="products_loading_more">Cargando más…</string>
+    <string name="products_search_hint">Buscar por código o descripción</string>
+    <string name="products_col_id">Id</string>
+    <string name="products_col_description">Descripción</string>
+    <string name="products_empty">No hay productos registrados</string>
+    <string name="products_load_error">No fue posible cargar los productos</string>
+    <string name="products_load_more_error">No fue posible cargar más productos, desliza para reintentar</string>
 
     <!-- Stock -->
     <string name="stock_title">Stock</string>
@@ -182,12 +225,17 @@
     <string name="stock_tile_gallons">Galones</string>
     <string name="stock_tile_liters">Litros</string>
     <string name="stock_tile_pieces">Piezas</string>
-    <string name="stock_type_title">Stock · Galones</string>
+    <string name="stock_type_title">Stock</string>
     <string name="stock_type_col_id">Id</string>
     <string name="stock_type_col_date">Fecha</string>
     <string name="stock_type_col_presentation">Present.</string>
-    <string name="stock_summary_title">Resumen · Galones</string>
+    <string name="stock_type_empty">No hay inventarios con esta presentación</string>
+    <string name="stock_type_load_error">No fue posible cargar los inventarios</string>
+    <string name="stock_summary_title">Resumen</string>
     <string name="stock_summary_filter_hint">Filtrar por descripción…</string>
+    <string name="stock_summary_empty">Este inventario no tiene existencias registradas</string>
+    <string name="stock_summary_filter_empty">Ningún producto coincide con el filtro</string>
+    <string name="stock_summary_load_error">No fue posible cargar el stock del inventario</string>
 
     <!-- Usuarios -->
     <string name="users_title">Usuarios</string>

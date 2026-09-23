@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/App.ListRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvProductId"
+            style="@style/App.ListRow.Title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="10292" />
+
+        <TextView
+            android:id="@+id/tvProductDescription"
+            style="@style/App.ListRow.Subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="THINNER E" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvStock"
+        style="@style/App.ListRow.Trail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        tools:text="1.200" />
+</LinearLayout>
