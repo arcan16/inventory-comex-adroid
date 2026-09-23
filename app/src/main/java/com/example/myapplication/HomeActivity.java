@@ -33,6 +33,8 @@ public class HomeActivity extends BaseActivity {
         findViewById(R.id.tileStock).setOnClickListener(v ->
                 startActivity(new Intent(this, StockActivity.class)));
 
+        findViewById(R.id.btnAccount).setOnClickListener(v ->
+                startActivity(new Intent(this, AccountActivity.class)));
         findViewById(R.id.btnLogout).setOnClickListener(v -> confirmLogout());
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNav);

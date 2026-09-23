@@ -32,6 +32,7 @@
         </activity>
         <activity android:name=".ServerConfigActivity" android:exported="false" />
         <activity android:name=".HomeActivity" android:exported="false" />
+        <activity android:name=".AccountActivity" android:exported="false" />
         <activity android:name=".InventoriesActivity" android:exported="false" />
         <activity android:name=".InventoryUploadActivity" android:exported="false" />
         <activity android:name=".CountNormalActivity" android:exported="false" />

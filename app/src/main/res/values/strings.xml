@@ -239,4 +239,25 @@
 
     <!-- Usuarios -->
     <string name="users_title">Usuarios</string>
+
+    <!-- Mi cuenta -->
+    <string name="account_title">Mi cuenta</string>
+    <string name="home_account_action">Mi cuenta</string>
+    <string name="account_username_label">Usuario</string>
+    <string name="account_email_label">Correo</string>
+    <string name="account_password_section_title">Cambiar contraseña</string>
+    <string name="account_password_section_hint">Déjalo en blanco si no quieres cambiar tu contraseña actual</string>
+    <string name="account_new_password_label">Nueva contraseña</string>
+    <string name="account_confirm_password_label">Confirmar contraseña</string>
+    <string name="account_save">Guardar cambios</string>
+    <string name="account_save_loading">Guardando…</string>
+    <string name="account_load_error">No fue posible cargar tu información de cuenta</string>
+    <string name="account_error_username_required">Escribe tu usuario</string>
+    <string name="account_error_email_required">Escribe tu correo</string>
+    <string name="account_error_email_invalid">Escribe un correo válido</string>
+    <string name="account_error_password_short">La contraseña debe tener al menos 6 caracteres</string>
+    <string name="account_error_password_mismatch">Las contraseñas no coinciden</string>
+    <string name="account_save_success">Cuenta actualizada</string>
+    <string name="account_save_error">No fue posible guardar los cambios: %1$s</string>
+    <string name="account_username_changed_message">Tu usuario cambió a \"%1$s\". Inicia sesión de nuevo para continuar.</string>
 </resources>
