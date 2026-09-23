@@ -27,7 +27,7 @@ Es el cliente móvil del backend `inventory-comex` (Spring Boot, repositorio her
   <tr>
     <td align="center"><img src="docs/mockups/stock_type.svg" width="200"/><br/><sub><b>Inventarios por tipo</b></sub></td>
     <td align="center"><img src="docs/mockups/stock_summary.svg" width="200"/><br/><sub><b>Existencias del inventario</b></sub></td>
-    <td></td>
+    <td align="center"><img src="docs/mockups/account.svg" width="200"/><br/><sub><b>Mi cuenta</b></sub></td>
   </tr>
 </table>
 
@@ -40,6 +40,7 @@ Es el cliente móvil del backend `inventory-comex` (Spring Boot, repositorio her
 - **Resumen y reportes**: tabla de diferencias por inventario con exportación/descarga de PDF, y una bitácora de todos los reportes generados.
 - **Catálogo de productos**: consulta paginada con búsqueda por código o descripción.
 - **Stock por presentación**: navegación Cubetas/Galones/Litros/Piezas → inventarios de ese tipo → existencias de un inventario, con filtro por descripción.
+- **Mi cuenta**: accesible con el ícono de persona en el toolbar de Inicio; muestra usuario y correo actuales (`GET /users/me`) y permite modificarlos junto con la contraseña (opcional), con validación de cliente (usuario/correo requeridos, formato de correo, contraseña ≥ 6 caracteres y confirmación) y manejo de errores del servidor (p. ej. usuario ya existente).
 
 ## Arquitectura y stack
 
@@ -92,6 +93,8 @@ La app no tiene una URL de backend fija en tiempo de compilación: el host y pue
 ## Notas de seguridad de la sesión
 
 El JWT se guarda en `SharedPreferences` junto con el usuario. `SessionPreferences.isLoggedIn()` decodifica localmente el claim `exp` del token (sin llamada de red) para saber si ya venció, así que una sesión expirada redirige a login antes de intentar cargar cualquier pantalla, no solo después de que una petición falle con `401`.
+
+El JWT firma el nombre de usuario como `sub`, así que si cambias tu `usuario` desde **Mi cuenta**, el token vigente deja de poder resolverse en el servidor (`JwtAuthorizationFilter` busca al usuario por ese nombre) — la app lo detecta y cierra la sesión automáticamente pidiendo iniciar sesión de nuevo con el usuario nuevo, en vez de seguir usando un token que el backend ya no reconoce.
 
 ## Licencia
 
