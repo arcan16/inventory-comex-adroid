@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -191,6 +192,12 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
             public void afterTextChanged(Editable s) {
             }
         });
+        etQuantity.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                addProductCount();
+            }
+            return false;
+        });
 
         etSearchCount.addTextChangedListener(new TextWatcher() {
             @Override
@@ -258,6 +265,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
                     applyCountSearchFilter();
                     contentScroll.setVisibility(View.VISIBLE);
                     etCode.requestFocus();
+                    showKeyboardFor(etCode);
                 } else {
                     showError(getString(R.string.count_normal_load_error));
                 }
@@ -711,6 +719,22 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         progressAdd.setVisibility(loading ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * requestFocus() por si solo no reabre el teclado si ya se habia cerrado
+     * (p.ej. al presionar "Listo" en cantidad, o tras recargar la lista
+     * despues de agregar/editar/eliminar un conteo). Se pide en el siguiente
+     * frame (view.post) para que la vista ya tenga el foco antes de pedirle al
+     * sistema que muestre el teclado sobre ella.
+     */
+    private void showKeyboardFor(View view) {
+        view.post(() -> {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT);
+            }
+        });
+    }
+
     private void resetForm() {
         editingEntry = null;
         updateAddButtonLabel();
@@ -722,6 +746,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         existingDifference = 0f;
         setUnknownProductUiVisible(false);
         etCode.requestFocus();
+        showKeyboardFor(etCode);
     }
 
     @Override
