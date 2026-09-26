@@ -2,17 +2,20 @@ package com.example.myapplication;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +25,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.ImageViewCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,6 +35,7 @@ import com.example.myapplication.data.ServerPreferences;
 import com.example.myapplication.data.SessionPreferences;
 import com.example.myapplication.network.ApiClient;
 import com.example.myapplication.network.ApiErrorUtils;
+import com.example.myapplication.network.AssignBarcodeRequest;
 import com.example.myapplication.network.CreateProductCountRequest;
 import com.example.myapplication.network.CreateProductCountResultDTO;
 import com.example.myapplication.network.InventoriesApi;
@@ -39,16 +45,22 @@ import com.example.myapplication.network.ProductCountCreatedDTO;
 import com.example.myapplication.network.ProductCountEntryDTO;
 import com.example.myapplication.network.ProductCountsApi;
 import com.example.myapplication.network.ProductDTO;
+import com.example.myapplication.network.ProductPresentationDTO;
+import com.example.myapplication.network.ProductsApi;
 import com.example.myapplication.network.StockItemDTO;
+import com.example.myapplication.scanner.BarcodeScanHelper;
 import com.example.myapplication.util.DateFormatUtils;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.color.MaterialColors;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -78,6 +90,38 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     private float existingDifference;
     private boolean isDeletingCount;
     private ProductCountEntryDTO editingEntry;
+
+    // ---- Busqueda por codigo de barras ----
+    /** Presentacion del inventario ("1 LT", "4 LTS"...), para detectar codigos de otra presentacion. */
+    private String inventoryPresentation;
+    /** Presentaciones con codigo que llegan con el inventario, mas las encontradas por red despues. */
+    private final Map<String, ProductPresentationDTO> presentationByBarcode = new HashMap<>();
+    private BarcodeScanHelper barcodeScan;
+    /** Modo "Barras": etCode contiene un codigo de barras en lugar del id del producto. */
+    private boolean barcodeMode;
+    private boolean suppressModeReset;
+    /** En modo Barras: codigo ya resuelto y el id de producto al que pertenece (el que se cuenta). */
+    private String resolvedBarcode;
+    private String resolvedProductId;
+    /** Producto del chip de codigo de barras visible, para no ocultarlo al re-validar el mismo id. */
+    private String barcodeInfoProductId;
+    /** Lectura en revision: aviso de otra presentacion o de codigo no registrado. */
+    private String pendingBarcode;
+    private ProductPresentationDTO pendingBarcodePresentation;
+    /** Codigo no registrado que se asignara al producto elegido en ProductPickerActivity. */
+    private String barcodeToAssign;
+    /** Descarta respuestas de busquedas por red que llegan despues de un reset o de otra lectura. */
+    private int barcodeLookupGeneration;
+
+    private MaterialButtonToggleGroup toggleGroup;
+    private TextView tvCodeLabel;
+    private ImageView btnScanBarcode;
+    private TextView tvBarcodeInfo;
+    private View barcodeMismatchContainer;
+    private TextView tvBarcodeMismatch;
+    private MaterialButton btnBarcodeUseAnyway;
+    private View barcodeUnknownContainer;
+    private TextView tvBarcodeUnknown;
 
     private View contentScroll;
     private View progressLoad;
@@ -123,7 +167,28 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         errorState = findViewById(R.id.errorState);
         tvErrorMessage = findViewById(R.id.tvErrorMessage);
 
-        MaterialButtonToggleGroup toggleGroup = findViewById(R.id.toggleGroup);
+        inventoryPresentation = presentation;
+        barcodeScan = new BarcodeScanHelper(this, new BarcodeScanHelper.Listener() {
+            @Override
+            public void onBarcodeScanned(@NonNull String value) {
+                onScannedBarcode(value.trim());
+            }
+
+            @Override
+            public void onScanningChanged(boolean scanning) {
+                updateScanUi(scanning);
+            }
+        });
+
+        toggleGroup = findViewById(R.id.toggleGroup);
+        tvCodeLabel = findViewById(R.id.tvCodeLabel);
+        btnScanBarcode = findViewById(R.id.btnScanBarcode);
+        tvBarcodeInfo = findViewById(R.id.tvBarcodeInfo);
+        barcodeMismatchContainer = findViewById(R.id.barcodeMismatchContainer);
+        tvBarcodeMismatch = findViewById(R.id.tvBarcodeMismatch);
+        btnBarcodeUseAnyway = findViewById(R.id.btnBarcodeUseAnyway);
+        barcodeUnknownContainer = findViewById(R.id.barcodeUnknownContainer);
+        tvBarcodeUnknown = findViewById(R.id.tvBarcodeUnknown);
         etCode = findViewById(R.id.etCode);
         tvStockValue = findViewById(R.id.tvStockValue);
         tvProductDescription = findViewById(R.id.tvProductDescription);
@@ -160,10 +225,60 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
             if (!isChecked) {
                 return;
             }
-            etCode.setInputType(checkedId == R.id.btnToggleNumber
-                    ? InputType.TYPE_CLASS_NUMBER
-                    : InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
-            resetForm();
+            barcodeMode = checkedId == R.id.btnToggleBarcode;
+            etCode.setInputType(checkedId == R.id.btnToggleText
+                    ? InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS
+                    : InputType.TYPE_CLASS_NUMBER);
+            tvCodeLabel.setText(barcodeMode ? R.string.count_barcode_label : R.string.count_code_label);
+            updateScanUi(barcodeScan.isRunning());
+            if (!suppressModeReset) {
+                resetForm();
+            }
+        });
+
+        btnScanBarcode.setOnClickListener(v -> barcodeScan.toggle());
+        findViewById(R.id.btnBarcodeDiscard).setOnClickListener(v -> discardBarcodeReading());
+        findViewById(R.id.btnBarcodeUnknownDiscard).setOnClickListener(v -> discardBarcodeReading());
+        btnBarcodeUseAnyway.setOnClickListener(v -> {
+            if (pendingBarcode != null && pendingBarcodePresentation != null) {
+                applyBarcodeProduct(pendingBarcode, pendingBarcodePresentation, true);
+            }
+        });
+        findViewById(R.id.btnBarcodeAssign).setOnClickListener(v -> {
+            if (pendingBarcode == null) {
+                return;
+            }
+            barcodeToAssign = pendingBarcode;
+            productPicker.launch(new Intent(this, ProductPickerActivity.class));
+        });
+
+        // En modo Barras, editar el codigo invalida la lectura anterior (el id resuelto y los avisos).
+        etCode.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!barcodeMode) {
+                    return;
+                }
+                String text = s.toString().trim();
+                if (resolvedBarcode != null && !text.equals(resolvedBarcode)) {
+                    resolvedBarcode = null;
+                    resolvedProductId = null;
+                    hideBarcodeInfo();
+                    tvProductDescription.setVisibility(View.GONE);
+                    tvStockValue.setText("");
+                }
+                if (pendingBarcode != null && !text.equals(pendingBarcode)) {
+                    hideBarcodeBanners();
+                }
+            }
         });
 
         etCode.setOnFocusChangeListener((v, hasFocus) -> {
@@ -257,6 +372,12 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
                 if (response.isSuccessful() && response.body() != null) {
                     products = response.body().getProducts();
                     stock = response.body().getStock();
+                    presentationByBarcode.clear();
+                    for (ProductPresentationDTO presentation : response.body().getBarcodes()) {
+                        if (!TextUtils.isEmpty(presentation.getBarcode())) {
+                            presentationByBarcode.put(presentation.getBarcode(), presentation);
+                        }
+                    }
                     // El backend regresa los conteos en orden de insercion (mas viejo primero);
                     // se invierte para que el ultimo producto agregado aparezca al inicio.
                     productCounts = response.body().getProductsCount();
@@ -348,9 +469,255 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
             return;
         }
 
+        if (barcodeMode) {
+            if (code.equals(resolvedBarcode) && resolvedProductId != null) {
+                return;
+            }
+            resolveBarcode(code);
+            return;
+        }
+
+        // Un id escrito a mano sustituye al producto encontrado por codigo de barras.
+        if (!code.equals(barcodeInfoProductId)) {
+            hideBarcodeInfo();
+        }
         updateStockDisplay(code);
         existingDifference = computeExistingDifference(code, null);
         refreshDifferenceDisplay();
+    }
+
+    // ------------------------------------------------------------------
+    // Busqueda por codigo de barras
+    // ------------------------------------------------------------------
+
+    /** Lectura de la camara: en modo Barras se muestra en el campo; en los otros se resuelve directo al id. */
+    private void onScannedBarcode(String code) {
+        if (TextUtils.isEmpty(code)) {
+            return;
+        }
+        if (barcodeMode) {
+            etCode.setText(code);
+            etCode.setSelection(etCode.getText().length());
+        }
+        resolveBarcode(code);
+    }
+
+    /**
+     * Busca la presentacion con ese codigo: primero en la lista descargada con
+     * el inventario (inmediato) y, si no esta, en el servidor
+     * (GET /products/presentations/barcode/{codigo}); 404 = no registrado.
+     */
+    private void resolveBarcode(String code) {
+        hideBarcodeBanners();
+        ProductPresentationDTO local = presentationByBarcode.get(code);
+        if (local != null) {
+            onBarcodeFound(code, local);
+            return;
+        }
+
+        int generation = ++barcodeLookupGeneration;
+        ProductsApi api = ApiClient.createProductsApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+        api.getPresentationByBarcode(code).enqueue(new Callback<ProductPresentationDTO>() {
+            @Override
+            public void onResponse(@NonNull Call<ProductPresentationDTO> call,
+                                   @NonNull Response<ProductPresentationDTO> response) {
+                if (generation != barcodeLookupGeneration || isFinishing()) {
+                    return;
+                }
+                if (response.code() == 401) {
+                    handleSessionExpired();
+                    return;
+                }
+                if (response.isSuccessful() && response.body() != null) {
+                    presentationByBarcode.put(code, response.body());
+                    onBarcodeFound(code, response.body());
+                } else if (response.code() == 404) {
+                    showUnknownBarcode(code);
+                } else {
+                    Toast.makeText(CountNormalActivity.this,
+                            getString(R.string.count_barcode_lookup_error, ApiErrorUtils.parseErrorMessage(response)),
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ProductPresentationDTO> call, @NonNull Throwable t) {
+                if (generation != barcodeLookupGeneration || isFinishing()) {
+                    return;
+                }
+                String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                Toast.makeText(CountNormalActivity.this,
+                        getString(R.string.count_barcode_lookup_error, reason), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /** Si la presentacion del codigo no es la del inventario, se avisa antes de contar. */
+    private void onBarcodeFound(String code, ProductPresentationDTO presentation) {
+        if (isSamePresentation(presentation.getPresentation(), inventoryPresentation)) {
+            applyBarcodeProduct(code, presentation, false);
+            return;
+        }
+        pendingBarcode = code;
+        pendingBarcodePresentation = presentation;
+        String description = presentation.getDescription() != null ? presentation.getDescription() : "";
+        tvBarcodeMismatch.setText(getString(R.string.count_barcode_mismatch, code, presentation.getProductId(),
+                description, presentation.getPresentation(), inventoryPresentation));
+        btnBarcodeUseAnyway.setText(getString(R.string.count_barcode_use_anyway, presentation.getProductId()));
+        barcodeMismatchContainer.setVisibility(View.VISIBLE);
+        btnScanBarcode.performHapticFeedback(HapticFeedbackConstants.REJECT);
+    }
+
+    /** Carga el producto del codigo leido en el formulario y deja el cursor en Cantidad. */
+    private void applyBarcodeProduct(String code, ProductPresentationDTO presentation, boolean otherPresentation) {
+        hideBarcodeBanners();
+        String productId = presentation.getProductId();
+        if (barcodeMode) {
+            resolvedBarcode = null;
+            resolvedProductId = null;
+            etCode.setText(code);
+            resolvedBarcode = code;
+            resolvedProductId = productId;
+        } else {
+            etCode.setText(productId);
+        }
+        etCode.setSelection(etCode.getText().length());
+        etCode.setError(null);
+
+        updateStockDisplay(productId);
+        existingDifference = computeExistingDifference(productId, null);
+        refreshDifferenceDisplay();
+
+        String info = barcodeMode
+                ? getString(R.string.count_barcode_found_id, productId, presentation.getPresentation())
+                : getString(R.string.count_barcode_found, code, presentation.getPresentation());
+        showBarcodeInfo(info, otherPresentation, productId);
+
+        etQuantity.requestFocus();
+        showKeyboardFor(etQuantity);
+        etCode.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+    }
+
+    private void showUnknownBarcode(String code) {
+        pendingBarcode = code;
+        pendingBarcodePresentation = null;
+        tvBarcodeUnknown.setText(getString(R.string.count_barcode_unknown, code));
+        barcodeUnknownContainer.setVisibility(View.VISIBLE);
+        btnScanBarcode.performHapticFeedback(HapticFeedbackConstants.REJECT);
+    }
+
+    private void discardBarcodeReading() {
+        hideBarcodeBanners();
+        if (barcodeMode) {
+            etCode.setText("");
+        }
+        etCode.requestFocus();
+        showKeyboardFor(etCode);
+    }
+
+    private void confirmAssignBarcode(String code, String productId, String description) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.count_barcode_assign_title)
+                .setMessage(getString(R.string.count_barcode_assign_message, code, productId,
+                        description != null ? description : "", inventoryPresentation))
+                .setPositiveButton(R.string.count_barcode_assign_action, (dialog, which) -> assignBarcode(code, productId))
+                .setNegativeButton(R.string.action_cancel, null)
+                .show();
+    }
+
+    /**
+     * POST /products/{id}/presentations/barcode con la presentacion del
+     * inventario: crea la presentacion si el producto no la tiene. Al terminar
+     * el conteo continua con ese producto.
+     */
+    private void assignBarcode(String code, String productId) {
+        ProductsApi api = ApiClient.createProductsApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+        api.assignBarcode(productId, new AssignBarcodeRequest(inventoryPresentation, code))
+                .enqueue(new Callback<ProductPresentationDTO>() {
+                    @Override
+                    public void onResponse(@NonNull Call<ProductPresentationDTO> call,
+                                           @NonNull Response<ProductPresentationDTO> response) {
+                        if (response.code() == 401) {
+                            handleSessionExpired();
+                            return;
+                        }
+                        if (response.isSuccessful() && response.body() != null) {
+                            presentationByBarcode.put(code, response.body());
+                            Toast.makeText(CountNormalActivity.this,
+                                    getString(R.string.count_barcode_assigned, productId, inventoryPresentation),
+                                    Toast.LENGTH_SHORT).show();
+                            applyBarcodeProduct(code, response.body(), false);
+                        } else {
+                            Toast.makeText(CountNormalActivity.this,
+                                    getString(R.string.count_barcode_assign_error, ApiErrorUtils.parseErrorMessage(response)),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(@NonNull Call<ProductPresentationDTO> call, @NonNull Throwable t) {
+                        String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                        Toast.makeText(CountNormalActivity.this,
+                                getString(R.string.count_barcode_assign_error, reason), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    /** Chip bajo la descripcion: verde si coincide la presentacion, ambar si se conto de otra. */
+    private void showBarcodeInfo(String text, boolean otherPresentation, String productId) {
+        tvBarcodeInfo.setText(text);
+        tvBarcodeInfo.setBackgroundResource(otherPresentation ? R.drawable.bg_chip_accent : R.drawable.bg_chip_good);
+        tvBarcodeInfo.setTextColor(ContextCompat.getColor(this,
+                otherPresentation ? R.color.md_theme_onTertiaryContainer : R.color.app_onSuccessContainer));
+        tvBarcodeInfo.setVisibility(View.VISIBLE);
+        barcodeInfoProductId = productId;
+    }
+
+    private void hideBarcodeInfo() {
+        tvBarcodeInfo.setVisibility(View.GONE);
+        barcodeInfoProductId = null;
+    }
+
+    private void hideBarcodeBanners() {
+        barcodeMismatchContainer.setVisibility(View.GONE);
+        barcodeUnknownContainer.setVisibility(View.GONE);
+        pendingBarcode = null;
+        pendingBarcodePresentation = null;
+    }
+
+    /** Mientras la camara lee, el hint del campo lo indica y el icono cambia de color. */
+    private void updateScanUi(boolean scanning) {
+        if (scanning) {
+            etCode.setHint(R.string.count_barcode_scanning_hint);
+        } else {
+            etCode.setHint(barcodeMode ? getString(R.string.count_barcode_hint) : null);
+        }
+        int color = scanning
+                ? ContextCompat.getColor(this, R.color.md_theme_error)
+                : MaterialColors.getColor(btnScanBarcode, androidx.appcompat.R.attr.colorPrimary);
+        ImageViewCompat.setImageTintList(btnScanBarcode, ColorStateList.valueOf(color));
+    }
+
+    /** Compara presentaciones ignorando mayusculas y espacios ("4 lts" == "4 LTS"). */
+    private static boolean isSamePresentation(String a, String b) {
+        if (a == null || b == null) {
+            return true; // Sin presentacion del inventario no hay contra que comparar.
+        }
+        return a.trim().replaceAll("\\s+", " ").equalsIgnoreCase(b.trim().replaceAll("\\s+", " "));
+    }
+
+    /** Id del producto que se cuenta: en modo Barras el resuelto a partir del codigo. */
+    private String currentProductCode() {
+        return barcodeMode ? resolvedProductId : etCode.getText().toString().trim();
+    }
+
+    /** Cambia el modo del campo Codigo sin limpiar el formulario. */
+    private void switchCodeMode(int buttonId) {
+        suppressModeReset = true;
+        toggleGroup.check(buttonId);
+        suppressModeReset = false;
     }
 
     /**
@@ -359,6 +726,9 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
      * producto por nombre y cargar aqui el codigo elegido.
      */
     private void onProductPicked(ActivityResult result) {
+        // El selector tambien se usa para elegir a que producto asignar un codigo no registrado.
+        String codeToAssign = barcodeToAssign;
+        barcodeToAssign = null;
         if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null) {
             return;
         }
@@ -366,6 +736,16 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         if (TextUtils.isEmpty(productId)) {
             return;
         }
+        if (codeToAssign != null) {
+            confirmAssignBarcode(codeToAssign, productId,
+                    result.getData().getStringExtra(ProductPickerActivity.EXTRA_PRODUCT_DESCRIPTION));
+            return;
+        }
+        if (barcodeMode) {
+            // El selector devuelve un id de producto, no un codigo de barras.
+            switchCodeMode(R.id.btnToggleNumber);
+        }
+        hideBarcodeBanners();
         etCode.setText(productId);
         performLookup();
         etQuantity.requestFocus();
@@ -461,9 +841,15 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     }
 
     private void addProductCount() {
-        String code = etCode.getText().toString().trim();
-        if (TextUtils.isEmpty(code)) {
+        if (TextUtils.isEmpty(etCode.getText().toString().trim())) {
             etCode.setError(getString(R.string.count_error_code_required));
+            etCode.requestFocus();
+            return;
+        }
+        String code = currentProductCode();
+        if (TextUtils.isEmpty(code)) {
+            // Modo Barras con un codigo escrito que aun no se ha buscado (o que no se encontro).
+            etCode.setError(getString(R.string.count_barcode_unresolved));
             etCode.requestFocus();
             return;
         }
@@ -551,7 +937,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
      * misma llamada (POST /productCounts/createProductAddCount).
      */
     private void registerNewProduct() {
-        String code = etCode.getText().toString().trim();
+        String code = currentProductCode();
         if (TextUtils.isEmpty(code)) {
             etCode.setError(getString(R.string.count_error_code_required));
             etCode.requestFocus();
@@ -738,6 +1124,12 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     private void resetForm() {
         editingEntry = null;
         updateAddButtonLabel();
+        barcodeScan.stop();
+        barcodeLookupGeneration++;
+        hideBarcodeBanners();
+        hideBarcodeInfo();
+        resolvedBarcode = null;
+        resolvedProductId = null;
         etCode.setText("");
         tvStockValue.setText("");
         tvProductDescription.setVisibility(View.GONE);
@@ -753,6 +1145,12 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     public void onSelect(ProductCountEntryDTO entry) {
         editingEntry = entry;
         updateAddButtonLabel();
+        if (barcodeMode) {
+            // El renglon se edita por id de producto.
+            switchCodeMode(R.id.btnToggleNumber);
+        }
+        hideBarcodeBanners();
+        hideBarcodeInfo();
 
         String code = entry.getIdProduct() != null ? entry.getIdProduct().getId() : "";
         etCode.setText(code);

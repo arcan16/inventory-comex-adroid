@@ -1,0 +1,781 @@
+<title>Conteo por código de barras</title>
+<meta name="description" content="Mockup navegable del Conteo físico con búsqueda por código de barras">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap">
+<style>
+  /* ---- Tokens de la página (tema claro por defecto) ---- */
+  :root {
+    --page-bg: #E7EAF1;
+    --panel: #FFFFFF;
+    --ink: #14203A;
+    --muted: #56647C;
+    --line: #D3D8E2;
+    --accent: #1E4FB8;
+    --accent-soft: #E4ECFB;
+    --frame: #0B0F1A;
+
+    /* ---- Tokens de la app (colors.xml): el teléfono siempre se ve en modo claro ---- */
+    --app-primary: #1E4FB8;
+    --app-on-primary: #FFFFFF;
+    --app-primary-container: #E4ECFB;
+    --app-on-primary-container: #0B2B66;
+    --app-tertiary-container: #FBEBD3;
+    --app-on-tertiary-container: #4A2E02;
+    --app-tertiary: #D9860F;
+    --app-error: #C43B3B;
+    --app-error-container: #FBE2E2;
+    --app-on-error-container: #5C1414;
+    --app-bg: #F1F2F5;
+    --app-surface: #FFFFFF;
+    --app-surface-variant: #F7F8FA;
+    --app-on-surface: #14203A;
+    --app-on-surface-variant: #5C6A82;
+    --app-outline: #D8DCE4;
+    --app-success: #1F8A57;
+    --app-success-container: #DFF3E8;
+    --app-on-success-container: #0C3D22;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page-bg: #0E1320;
+      --panel: #161E2F;
+      --ink: #E4E9F2;
+      --muted: #9CA8BE;
+      --line: #2A3550;
+      --accent: #8FB0F5;
+      --accent-soft: #1D2B4A;
+      --frame: #03050A;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page-bg: #0E1320;
+    --panel: #161E2F;
+    --ink: #E4E9F2;
+    --muted: #9CA8BE;
+    --line: #2A3550;
+    --accent: #8FB0F5;
+    --accent-soft: #1D2B4A;
+    --frame: #03050A;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    background: var(--page-bg);
+    color: var(--ink);
+    font-family: Roboto, system-ui, "Segoe UI", sans-serif;
+    padding-inline: 16px;
+    padding-block: 32px 48px;
+  }
+  .stage {
+    max-width: 1040px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .stage { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+    .panel { width: 100%; max-width: 560px; }
+  }
+
+  /* ================= Teléfono ================= */
+  .phone {
+    width: min(380px, 100%);
+    height: 800px;
+    border-radius: 40px;
+    border: 10px solid var(--frame);
+    background: var(--app-bg);
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 24px 60px rgba(11, 20, 40, 0.28);
+    color: var(--app-on-surface);
+    display: flex;
+    flex-direction: column;
+    font-size: 14px;
+  }
+  .status {
+    height: 24px; flex: none;
+    background: var(--app-primary); color: var(--app-on-primary);
+    font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 18px;
+  }
+  .toolbar {
+    flex: none;
+    background: var(--app-primary); color: var(--app-on-primary);
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 8px 10px;
+  }
+  .toolbar .nav { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 50%; }
+  .toolbar h1 { margin: 0; font-size: 19px; font-weight: 500; line-height: 1.2; }
+  .toolbar p { margin: 2px 0 0; font-size: 12.5px; opacity: .85; }
+
+  .content {
+    flex: 1; overflow-y: auto;
+    padding: 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  /* Toggle Número / Texto / Barras */
+  .toggle { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1.5px solid var(--app-primary); border-radius: 10px; overflow: hidden; }
+  .toggle button {
+    height: 40px; border: 0; background: transparent; color: var(--app-primary);
+    font: 500 13.5px Roboto, sans-serif; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .toggle button + button { border-left: 1.5px solid var(--app-primary); }
+  .toggle button[aria-pressed="true"] { background: var(--app-primary); color: var(--app-on-primary); }
+  .new-dot { font-size: 9.5px; font-weight: 700; letter-spacing: .04em; padding: 1px 5px; border-radius: 6px; background: var(--app-tertiary-container); color: var(--app-on-tertiary-container); }
+  .toggle button[aria-pressed="true"] .new-dot { background: rgba(255,255,255,.22); color: #fff; }
+
+  .row { display: grid; grid-template-columns: 1.35fr 1fr; gap: 8px; }
+  .row.even { grid-template-columns: 1fr 1fr; }
+  .field {
+    background: var(--app-surface); border: 1px solid var(--app-outline); border-radius: 10px;
+    padding: 8px 12px; min-height: 58px;
+    display: flex; flex-direction: column; justify-content: center; gap: 2px;
+    position: relative; overflow: hidden;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field.disabled { background: var(--app-surface-variant); }
+  .field.focus { border-color: var(--app-primary); box-shadow: 0 0 0 1px var(--app-primary); }
+  .field label, .field .label {
+    font-size: 10.5px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase;
+    color: var(--app-on-surface-variant);
+  }
+  .field input {
+    border: 0; outline: 0; padding: 0; background: transparent; width: 100%; min-width: 0;
+    font: 500 15px "Roboto Mono", ui-monospace, monospace; color: var(--app-on-surface);
+  }
+  .field input::placeholder { color: #98A3B6; font-family: Roboto, sans-serif; font-weight: 400; font-size: 13px; }
+  .field .value { font: 500 15px "Roboto Mono", ui-monospace, monospace; color: var(--app-on-surface-variant); font-variant-numeric: tabular-nums; }
+  .value.neg { color: var(--app-error); }
+  .value.pos { color: var(--app-success); }
+  .code-line { display: flex; align-items: center; gap: 0; }
+  .icon-btn {
+    width: 40px; height: 40px; margin: -8px -6px -8px 0; flex: none;
+    border: 0; border-radius: 50%; background: transparent; cursor: pointer;
+    display: grid; place-items: center; color: var(--app-on-surface-variant);
+  }
+  .icon-btn:hover { background: rgba(30,79,184,.08); }
+  .icon-btn.scan { color: var(--app-primary); }
+  .icon-btn.scan[aria-pressed="true"] { background: var(--app-primary); color: #fff; }
+  .icon-btn:focus-visible, .toggle button:focus-visible, .btn:focus-visible, .pick:focus-visible { outline: 2px solid var(--app-tertiary); outline-offset: 2px; }
+
+  /* Estado escaneando dentro del campo CÓDIGO */
+  .scanning-text { display: none; font-size: 13px; color: var(--app-primary); font-weight: 500; }
+  .field.is-scanning { border-color: var(--app-primary); box-shadow: 0 0 0 1px var(--app-primary); background: #F6F9FF; }
+  .field.is-scanning input { display: none; }
+  .field.is-scanning .scanning-text { display: block; }
+  .field.is-scanning::after {
+    content: ""; position: absolute; left: 10px; right: 10px; height: 2px; top: 50%;
+    background: linear-gradient(90deg, transparent, var(--app-error), transparent);
+    animation: sweep 1.1s ease-in-out infinite alternate;
+  }
+  @keyframes sweep { from { transform: translateY(-16px); } to { transform: translateY(16px); } }
+  @media (prefers-reduced-motion: reduce) { .field.is-scanning::after { animation: none; } }
+
+  /* Resultado */
+  .result { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 700;
+  }
+  .chip.primary { background: var(--app-primary-container); color: var(--app-on-primary-container); }
+  .chip.good { background: var(--app-success-container); color: var(--app-on-success-container); font-family: "Roboto Mono", monospace; font-weight: 500; }
+  .chip.warn { background: var(--app-tertiary-container); color: var(--app-on-tertiary-container); }
+
+  .banner {
+    border-radius: 12px; padding: 12px; display: grid; grid-template-columns: 22px 1fr; gap: 10px;
+    font-size: 13.5px; line-height: 1.45;
+  }
+  .banner.warn { background: var(--app-tertiary-container); color: var(--app-on-tertiary-container); }
+  .banner.error { background: var(--app-error-container); color: var(--app-on-error-container); }
+  .banner p { margin: 0; }
+  .banner .mono { font-family: "Roboto Mono", monospace; font-weight: 500; }
+  .banner .actions { grid-column: 2; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+  select.place {
+    border: 0; outline: 0; background: transparent; padding: 0; width: 100%;
+    font: 400 15px Roboto, sans-serif; color: var(--app-on-surface); appearance: none; cursor: pointer;
+  }
+  .place-wrap { position: relative; }
+  .place-wrap svg { position: absolute; right: 0; top: 50%; transform: translateY(-50%); pointer-events: none; }
+
+  .btn {
+    height: 44px; border-radius: 10px; font: 500 14px Roboto, sans-serif; cursor: pointer; padding: 0 16px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .btn.filled { background: var(--app-primary); color: var(--app-on-primary); border: 0; }
+  .btn.outline { background: transparent; color: var(--app-primary); border: 1.5px solid var(--app-primary); }
+  .btn.tonal-warn { background: var(--app-on-tertiary-container); color: var(--app-tertiary-container); border: 0; height: 40px; }
+  .btn.tonal-err { background: var(--app-error); color: #fff; border: 0; height: 40px; }
+  .btn.text { background: transparent; border: 0; color: inherit; text-decoration: underline; text-underline-offset: 3px; height: 40px; padding: 0 8px; }
+  .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--app-surface); border: 1px solid var(--app-outline); border-radius: 10px; padding: 0 12px; height: 44px;
+    color: #98A3B6; font-size: 13.5px; margin-top: 6px;
+  }
+  .list-head { display: grid; grid-template-columns: 1fr 1fr 64px; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--app-on-surface-variant); padding: 0 12px; }
+  .list-head span:last-child { text-align: right; }
+  .list { background: var(--app-surface); border: 1px solid var(--app-outline); border-radius: 10px; }
+  .list-row { display: grid; grid-template-columns: 1fr 1fr 64px; align-items: center; padding: 0 4px 0 12px; min-height: 48px; font: 400 14px "Roboto Mono", monospace; font-variant-numeric: tabular-nums; }
+  .list-row + .list-row { border-top: 1px solid var(--app-outline); }
+  .list-row .acts { display: flex; justify-content: flex-end; }
+  .list-row .acts span { width: 32px; height: 40px; display: grid; place-items: center; }
+  .list-row.fresh { background: var(--app-success-container); }
+
+  /* Snackbar */
+  .snack {
+    position: absolute; left: 12px; right: 12px; bottom: 16px;
+    background: #22304D; color: #fff; border-radius: 10px; padding: 12px 14px;
+    font-size: 13.5px; display: flex; gap: 10px; align-items: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,.25);
+    transition: opacity .2s, transform .2s;
+  }
+  .snack[hidden] { display: none !important; }
+
+  /* Bottom sheet para asignar */
+  .scrim { position: absolute; inset: 0; background: rgba(12, 18, 32, .45); display: flex; align-items: flex-end; }
+  .sheet {
+    width: 100%; background: var(--app-surface); border-radius: 20px 20px 0 0; padding: 8px 16px 16px;
+    max-height: 78%; display: flex; flex-direction: column; gap: 12px;
+  }
+  .grabber { width: 36px; height: 4px; border-radius: 2px; background: var(--app-outline); margin: 4px auto 4px; }
+  .sheet h2 { margin: 0; font-size: 18px; font-weight: 500; }
+  .sheet .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .picks { overflow-y: auto; border: 1px solid var(--app-outline); border-radius: 10px; }
+  .pick {
+    width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center;
+    min-height: 48px; padding: 6px 12px; border: 0; background: transparent; text-align: left; cursor: pointer;
+    font: 400 13px Roboto, sans-serif; color: var(--app-on-surface);
+  }
+  .pick + .pick { border-top: 1px solid var(--app-outline); }
+  .pick b { font: 500 13.5px "Roboto Mono", monospace; }
+  .pick[aria-selected="true"] { background: var(--app-primary-container); }
+
+  /* ================= Panel lateral ================= */
+  .panel { display: flex; flex-direction: column; gap: 24px; padding-top: 8px; }
+  .eyebrow { font: 500 11.5px Roboto, sans-serif; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 0; }
+  .panel h1 { font: 700 34px/1.1 Archivo, Roboto, sans-serif; margin: 6px 0 10px; text-wrap: balance; letter-spacing: -.01em; }
+  .lede { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.55; max-width: 60ch; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  .card h2 { font: 700 15px Archivo, Roboto, sans-serif; margin: 0 0 12px; }
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .steps button {
+    width: 100%; text-align: left; border: 1px solid var(--line); background: transparent; color: var(--ink);
+    border-radius: 10px; padding: 10px 12px; cursor: pointer; font: 400 14px Roboto, sans-serif;
+    display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: center;
+  }
+  .steps button .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11.5px; font-weight: 700; background: var(--accent-soft); color: var(--accent); }
+  .steps button[aria-current="true"] { border-color: var(--accent); background: var(--accent-soft); }
+  .steps button small { display: block; color: var(--muted); font-size: 12.5px; margin-top: 1px; }
+  .sim { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sim label {
+    display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px;
+    padding: 7px 12px; cursor: pointer; font-size: 13px;
+  }
+  .sim input { accent-color: var(--accent); margin: 0; }
+  .sim label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .hint { margin: 10px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .notes { margin: 0; font-size: 14px; line-height: 1.6; }
+  .notes p { margin: 0 0 8px; }
+  .notes p:last-child { margin: 0; }
+  code { font-family: "Roboto Mono", monospace; font-size: 12.5px; background: var(--accent-soft); color: var(--ink); padding: 1px 5px; border-radius: 5px; }
+  .samples { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 13px; }
+  .samples li { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .samples code { cursor: copy; }
+  .samples span { color: var(--muted); }
+  .example-tag { font-size: 12px; color: var(--muted); margin: 0; }
+</style>
+
+<div class="stage">
+  <!-- ================== TELÉFONO ================== -->
+  <div class="phone" id="phone">
+    <div class="status"><span>9:41</span><span>▲ ● 86%</span></div>
+    <header class="toolbar">
+      <span class="nav" aria-label="Regresar">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
+      </span>
+      <div>
+        <h1>Conteo físico</h1>
+        <p>1 LT · 25 sep 2026</p>
+      </div>
+    </header>
+
+    <main class="content" id="content">
+      <div class="toggle" role="group" aria-label="Tipo de código">
+        <button type="button" id="modeNumber" aria-pressed="true">Número</button>
+        <button type="button" id="modeText" aria-pressed="false">Texto</button>
+        <button type="button" id="modeBarcode" aria-pressed="false">Barras <span class="new-dot">NUEVO</span></button>
+      </div>
+
+      <div class="row">
+        <div class="field" id="codeField">
+          <label for="codeInput" id="codeLabel">Código</label>
+          <div class="code-line">
+            <input id="codeInput" inputmode="numeric" autocomplete="off" placeholder="Id del producto">
+            <span class="scanning-text" aria-live="polite">Escaneando… apunta la cámara</span>
+            <button class="icon-btn" type="button" id="btnPicker" aria-label="Buscar producto por nombre" title="Buscar producto por nombre">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+            </button>
+            <button class="icon-btn scan" type="button" id="btnScan" aria-pressed="false" aria-label="Escanear código de barras" title="Escanear código de barras">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="5" width="1.8" height="14"/><rect x="6.2" y="5" width="1" height="14"/><rect x="8.6" y="5" width="2.4" height="14"/><rect x="12.4" y="5" width="1" height="14"/><rect x="14.8" y="5" width="1.8" height="14"/><rect x="18" y="5" width="1" height="14"/><rect x="20" y="5" width="1.2" height="14"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="field disabled">
+          <span class="label">Stock</span>
+          <span class="value" id="stockValue">—</span>
+        </div>
+      </div>
+
+      <!-- Resultado de la búsqueda -->
+      <div class="result" id="resultFound" hidden>
+        <span class="chip primary" id="foundDesc">REAL FLEX NF BLANCO</span>
+        <span class="chip good" id="foundTag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+          <span id="foundTagText">7500025005071 · 1 LT</span>
+        </span>
+      </div>
+
+      <div class="banner warn" id="resultMismatch" hidden role="alert">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3l9.5 17h-19z"/><path d="M12 10v4.5M12 17.5v.2"/></svg>
+        <div>
+          <p>El código <span class="mono" id="mmCode">7500025005095</span> es de <b id="mmProduct">1100 · REAL FLEX NF BLANCO</b> en <b id="mmPres">4 LTS</b>.</p>
+          <p>Este inventario es de <b>1 LT</b>. Revisa que tomaste el envase correcto.</p>
+        </div>
+        <div class="actions">
+          <button class="btn tonal-warn" type="button" id="mmDiscard">Descartar lectura</button>
+          <button class="btn text" type="button" id="mmUse">Contar 1100 de todos modos</button>
+        </div>
+      </div>
+
+      <div class="banner error" id="resultUnknown" hidden role="alert">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.3v.2"/></svg>
+        <div>
+          <p>El código <span class="mono" id="ukCode">7501035911208</span> no está registrado en ninguna presentación.</p>
+        </div>
+        <div class="actions">
+          <button class="btn tonal-err" type="button" id="ukAssign">Asignar a un producto</button>
+          <button class="btn text" type="button" id="ukDiscard">Descartar</button>
+        </div>
+      </div>
+
+      <div class="row even">
+        <div class="field" id="qtyField">
+          <label for="qtyInput">Cantidad</label>
+          <input id="qtyInput" inputmode="decimal" autocomplete="off" placeholder="0.000">
+        </div>
+        <div class="field disabled">
+          <span class="label">Diferencia</span>
+          <span class="value" id="diffValue">—</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="place">Lugar</label>
+        <div class="place-wrap">
+          <select class="place" id="place">
+            <option>Piso de venta</option>
+            <option selected>Almacén</option>
+            <option>Bodega</option>
+            <option>Nota</option>
+          </select>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5C6A82" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="btn filled" type="button" id="btnAdd">Agregar</button>
+        <button class="btn outline" type="button" id="btnCancel">Cancelar</button>
+      </div>
+
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6A82" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        Buscar en conteos registrados
+      </div>
+      <div class="list-head"><span>Id</span><span>Cantidad</span><span>Acción</span></div>
+      <div class="list" id="countList"></div>
+      <button class="btn outline" type="button" style="width:100%">Resumen</button>
+    </main>
+
+    <div class="snack" id="snack" hidden role="status">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7EE0AE" stroke-width="2.6" stroke-linecap="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>
+      <span id="snackText">Código leído</span>
+    </div>
+
+    <div class="scrim" id="sheet" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+        <div class="grabber"></div>
+        <h2 id="sheetTitle">Asignar código de barras</h2>
+        <div class="meta">
+          <div class="field disabled"><span class="label">Código</span><span class="value" id="sheetCode">7501035911208</span></div>
+          <div class="field disabled"><span class="label">Presentación</span><span class="value">1 LT</span></div>
+        </div>
+        <div class="field">
+          <label for="sheetSearch">Producto</label>
+          <input id="sheetSearch" autocomplete="off" placeholder="Busca por id o descripción">
+        </div>
+        <div class="picks" id="picks" role="listbox" aria-label="Productos del inventario"></div>
+        <div class="buttons">
+          <button class="btn filled" type="button" id="sheetConfirm" disabled style="opacity:.45">Asignar</button>
+          <button class="btn outline" type="button" id="sheetCancel">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================== PANEL ================== -->
+  <aside class="panel">
+    <div>
+      <p class="eyebrow">Inventory Comex · Propuesta</p>
+      <h1>Conteo físico con código de barras</h1>
+      <p class="lede">Escanea con la cámara sin salir del conteo, o escribe el código en el modo Barras. La app encuentra el producto, verifica que la presentación coincida con la del inventario y deja el cursor en Cantidad.</p>
+    </div>
+
+    <section class="card">
+      <h2>Recorre el flujo</h2>
+      <ol class="steps" id="steps">
+        <li><button type="button" data-go="idle"><span class="n">1</span><span>Conteo listo<small>Ícono nuevo en Código y modo Barras</small></span></button></li>
+        <li><button type="button" data-go="scanning"><span class="n">2</span><span>Escaneando<small>La cámara lee sin cambiar de pantalla</small></span></button></li>
+        <li><button type="button" data-go="found"><span class="n">3</span><span>Producto encontrado<small>Llena Código, Stock y enfoca Cantidad</small></span></button></li>
+        <li><button type="button" data-go="mismatch"><span class="n">4</span><span>Otra presentación<small>El código es de 4 LTS, el inventario de 1 LT</small></span></button></li>
+        <li><button type="button" data-go="unknown"><span class="n">5</span><span>Código no registrado<small>Se ofrece asignarlo a un producto</small></span></button></li>
+        <li><button type="button" data-go="assign"><span class="n">6</span><span>Asignar código<small>Hoja inferior con buscador</small></span></button></li>
+      </ol>
+    </section>
+
+    <section class="card">
+      <h2>Qué leerá la cámara</h2>
+      <div class="sim" role="radiogroup" aria-label="Resultado simulado del escaneo">
+        <label><input type="radio" name="sim" value="7500025005071" checked> Coincide (1 LT)</label>
+        <label><input type="radio" name="sim" value="7500025005095"> Otra presentación</label>
+        <label><input type="radio" name="sim" value="7501035911208"> No registrado</label>
+      </div>
+      <p class="hint">Toca el ícono de código de barras en el teléfono. La lectura llega en unos 2 segundos. En modo <b>Barras</b> también puedes escribir uno de estos códigos y presionar Enter:</p>
+      <ul class="samples" style="margin-top:10px">
+        <li><code>7500025005071</code><span>1100 · 1 LT</span></li>
+        <li><code>7500025006092</code><span>1400 · 1 LT</span></li>
+        <li><code>7500025005095</code><span>1100 · 4 LTS</span></li>
+        <li><code>7501035911208</code><span>sin registrar</span></li>
+      </ul>
+      <p class="example-tag" style="margin-top:10px">Datos de ejemplo tomados del reporte de 1 LT (cubetas_barcode.csv). El código de 4 LTS es inventado.</p>
+    </section>
+
+    <section class="card">
+      <h2 id="notesTitle">Cómo funciona</h2>
+      <div class="notes" id="notes"></div>
+    </section>
+  </aside>
+</div>
+
+<script>
+(function () {
+  const INVENTORY_PRES = "1 LT";
+  // Productos del inventario (stock del reporte de 1 LT).
+  const PRODUCTS = [
+    { id: "100", desc: "COMEX 100 BLANCO", stock: 2.000 },
+    { id: "1100", desc: "REAL FLEX NF BLANCO", stock: 6.000 },
+    { id: "1400", desc: "DUREX MASTER BLANCO", stock: 4.000 },
+    { id: "13922", desc: "RESISTOL 5000 1L", stock: 3.000 },
+    { id: "27712", desc: "VINIMEX CLASICA NF BLANCO MATE", stock: 3.000 },
+    { id: "300", desc: "PRO 1000 PLUS BLANCO", stock: 5.625 },
+    { id: "3321", desc: "FLASH COAT NF BLANCO", stock: 3.500 },
+    { id: "68000", desc: "UNIRAPID PEGAMENTO BLANCO EXTRA FUE", stock: 4.000 },
+    { id: "977", desc: "VELMAR NF BLANCO", stock: 6.000 }
+  ];
+  // product_presentations con barcode.
+  const BARCODES = {
+    "7500025005071": { id: "1100", pres: "1 LT" },
+    "7500025006092": { id: "1400", pres: "1 LT" },
+    "7500025005095": { id: "1100", pres: "4 LTS" }
+  };
+  const counts = [ { id: "100", qty: 2.000 }, { id: "1400", qty: 3.500 } ];
+
+  const NOTES = {
+    idle: ["Cómo funciona", [
+      "El campo <b>Código</b> suma un ícono de código de barras junto a la lupa. La lupa sigue abriendo el buscador de productos por nombre.",
+      "El selector gana un tercer modo, <b>Barras</b>, para escribir el código a mano cuando la etiqueta está dañada o no hay buena luz. En ese modo la etiqueta cambia a <i>Código de barras</i>."
+    ]],
+    scanning: ["Escaneando", [
+      "Se reutiliza <code>HeadlessBarcodeScanner</code> (CameraX + ML Kit, sin vista previa), el mismo de Editar producto. No cambia de pantalla.",
+      "El campo se marca con borde azul y una línea de lectura. Tocar el ícono otra vez cancela; la cámara se apaga sola a los 20 s o al salir de la pantalla."
+    ]],
+    found: ["Producto encontrado", [
+      "El código se busca primero en la lista local: <code>NormalInventoryDataDTO</code> incluiría las presentaciones del inventario con su <code>barcode</code>. La respuesta es inmediata y funciona aunque la red esté lenta.",
+      "Se llena <b>Código</b> con el id del producto, se muestran Stock y descripción, y un chip verde confirma el código y la presentación. El cursor pasa a <b>Cantidad</b> y el teléfono vibra."
+    ]],
+    mismatch: ["Otra presentación", [
+      "Si el código no está en la lista local, se consulta <code>GET /products/presentations/barcode/{codigo}</code>, que devuelve un <code>ProductPresentationDTO</code>.",
+      "Cuando la presentación no coincide con la del inventario se avisa antes de contar. La acción destacada es descartar; contar de todos modos queda como texto secundario."
+    ]],
+    unknown: ["Código no registrado", [
+      "Si el endpoint responde 404, el aviso ofrece <b>Asignar a un producto</b>. Así los códigos que faltan se completan durante el conteo en lugar de en otra pantalla.",
+      "El código leído no se pierde: se lleva a la hoja de asignación."
+    ]],
+    assign: ["Asignar código", [
+      "Hoja inferior con buscador sobre los productos del inventario. La presentación queda fija en la del inventario (1 LT).",
+      "Si el producto ya tiene la presentación sin código, se usa <code>PUT /products/{id}/presentations/{presentationId}</code>. Si no la tiene, haría falta un <code>POST</code> nuevo que la cree con el código.",
+      "Al confirmar, el conteo continúa con ese producto y el campo Cantidad enfocado."
+    ]]
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const codeField = $("codeField"), codeInput = $("codeInput"), codeLabel = $("codeLabel");
+  const btnScan = $("btnScan"), stockValue = $("stockValue"), diffValue = $("diffValue");
+  const qtyInput = $("qtyInput"), qtyField = $("qtyField");
+  const resultFound = $("resultFound"), resultMismatch = $("resultMismatch"), resultUnknown = $("resultUnknown");
+  const sheet = $("sheet"), picks = $("picks"), sheetSearch = $("sheetSearch"), sheetConfirm = $("sheetConfirm");
+  const snack = $("snack"), snackText = $("snackText");
+  let mode = "number";
+  let current = null;          // producto seleccionado
+  let pendingCode = null;      // código leído en revisión
+  let scanTimer = null, snackTimer = null;
+  let selectedPick = null;
+
+  const fmt = (n) => n.toFixed(3);
+  const productById = (id) => PRODUCTS.find(p => p.id === id);
+
+  function setMode(next) {
+    mode = next;
+    [["number", "modeNumber"], ["text", "modeText"], ["barcode", "modeBarcode"]].forEach(([m, id]) =>
+      $(id).setAttribute("aria-pressed", String(m === next)));
+    codeLabel.textContent = next === "barcode" ? "Código de barras" : "Código";
+    codeInput.placeholder = next === "barcode" ? "Escanea o escribe el código" : "Id del producto";
+    codeInput.inputMode = next === "text" ? "text" : "numeric";
+    reset();
+  }
+
+  function clearResults() {
+    resultFound.hidden = true; resultMismatch.hidden = true; resultUnknown.hidden = true;
+  }
+
+  function reset() {
+    stopScan();
+    clearResults();
+    current = null; pendingCode = null;
+    codeInput.value = ""; qtyInput.value = "";
+    stockValue.textContent = "—"; diffValue.textContent = "—"; diffValue.className = "value";
+    qtyField.classList.remove("focus");
+    setStep("idle");
+  }
+
+  function startScan() {
+    clearResults();
+    codeField.classList.add("is-scanning");
+    btnScan.setAttribute("aria-pressed", "true");
+    setStep("scanning");
+    clearTimeout(scanTimer);
+    scanTimer = setTimeout(() => {
+      const code = document.querySelector('input[name="sim"]:checked').value;
+      stopScan();
+      navigator.vibrate?.(30);
+      resolveBarcode(code);
+    }, 2000);
+  }
+
+  function stopScan() {
+    clearTimeout(scanTimer);
+    codeField.classList.remove("is-scanning");
+    btnScan.setAttribute("aria-pressed", "false");
+  }
+
+  function resolveBarcode(code) {
+    const hit = BARCODES[code];
+    clearResults();
+    if (!hit) {
+      pendingCode = code;
+      $("ukCode").textContent = code;
+      if (mode === "barcode") codeInput.value = code;
+      resultUnknown.hidden = false;
+      setStep("unknown");
+      return;
+    }
+    const product = productById(hit.id);
+    if (hit.pres !== INVENTORY_PRES) {
+      pendingCode = code;
+      $("mmCode").textContent = code;
+      $("mmProduct").textContent = product.id + " · " + product.desc;
+      $("mmPres").textContent = hit.pres;
+      $("mmUse").textContent = "Contar " + product.id + " de todos modos";
+      if (mode === "barcode") codeInput.value = code;
+      resultMismatch.hidden = false;
+      setStep("mismatch");
+      return;
+    }
+    showFound(product, code, hit.pres, false);
+    toast("Código leído: " + product.id + " · " + product.desc);
+  }
+
+  function showFound(product, code, pres, warn) {
+    current = product;
+    clearResults();
+    codeInput.value = mode === "barcode" ? code : product.id;
+    $("foundDesc").textContent = mode === "barcode" ? product.id + " · " + product.desc : product.desc;
+    $("foundTagText").textContent = code + " · " + pres;
+    $("foundTag").className = "chip " + (warn ? "warn" : "good");
+    $("foundTag").hidden = false;
+    resultFound.hidden = false;
+    stockValue.textContent = fmt(product.stock);
+    refreshDiff();
+    qtyField.classList.add("focus");
+    qtyInput.focus({ preventScroll: true });
+    setStep("found");
+  }
+
+  function lookupTyped() {
+    const raw = codeInput.value.trim();
+    if (!raw) return;
+    if (mode === "barcode") { resolveBarcode(raw); return; }
+    const product = productById(raw.toUpperCase());
+    clearResults();
+    if (product) {
+      current = product;
+      $("foundDesc").textContent = product.desc;
+      $("foundTag").hidden = true;
+      resultFound.hidden = false;
+      stockValue.textContent = fmt(product.stock);
+      refreshDiff();
+      qtyField.classList.add("focus");
+      qtyInput.focus({ preventScroll: true });
+    }
+  }
+
+  function refreshDiff() {
+    if (!current) { diffValue.textContent = "—"; return; }
+    const counted = counts.filter(c => c.id === current.id).reduce((a, c) => a + c.qty, 0);
+    const typed = parseFloat((qtyInput.value || "0").replace(",", ".")) || 0;
+    const diff = counted + typed - current.stock;
+    diffValue.textContent = (diff >= 0 ? "+" : "") + fmt(diff);
+    diffValue.className = "value " + (diff < 0 ? "neg" : diff > 0 ? "pos" : "");
+  }
+
+  function renderCounts(freshIndex) {
+    const pencil = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5C6A82" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>';
+    const trash = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C43B3B" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6.5 7l1 13h9l1-13"/></svg>';
+    $("countList").innerHTML = counts.map((c, i) =>
+      '<div class="list-row' + (i === freshIndex ? ' fresh' : '') + '"><span>' + c.id + '</span><span>' + fmt(c.qty) +
+      '</span><span class="acts"><span aria-label="Editar">' + pencil + '</span><span aria-label="Eliminar">' + trash + '</span></span></div>'
+    ).join("");
+  }
+
+  function toast(text) {
+    snackText.textContent = text;
+    snack.hidden = false;
+    clearTimeout(snackTimer);
+    snackTimer = setTimeout(() => { snack.hidden = true; }, 2600);
+  }
+
+  // ---- Hoja de asignación ----
+  function openSheet() {
+    $("sheetCode").textContent = pendingCode;
+    sheetSearch.value = "";
+    selectedPick = null;
+    renderPicks();
+    updateConfirm();
+    sheet.hidden = false;
+    setStep("assign");
+  }
+  function closeSheet() { sheet.hidden = true; }
+  function renderPicks() {
+    const q = sheetSearch.value.trim().toUpperCase();
+    const list = PRODUCTS.filter(p => !q || p.id.includes(q) || p.desc.includes(q));
+    picks.innerHTML = list.map(p =>
+      '<button type="button" class="pick" role="option" data-id="' + p.id + '" aria-selected="' + (p.id === selectedPick) + '"><b>' + p.id + '</b><span>' + p.desc + '</span></button>'
+    ).join("") || '<p style="margin:0;padding:14px;color:#5C6A82;font-size:13px">Ningún producto coincide</p>';
+  }
+  function updateConfirm() {
+    sheetConfirm.disabled = !selectedPick;
+    sheetConfirm.style.opacity = selectedPick ? "1" : ".45";
+    sheetConfirm.textContent = selectedPick ? "Asignar a " + selectedPick : "Asignar";
+  }
+
+  // ---- Pasos del panel ----
+  function setStep(step) {
+    document.querySelectorAll("#steps button").forEach(b =>
+      b.setAttribute("aria-current", String(b.dataset.go === step)));
+    const [title, paras] = NOTES[step];
+    $("notesTitle").textContent = title;
+    $("notes").innerHTML = paras.map(p => "<p>" + p + "</p>").join("");
+  }
+
+  function goTo(step) {
+    closeSheet();
+    snack.hidden = true;
+    if (step === "idle") { reset(); return; }
+    if (step === "scanning") { reset(); startScan(); return; }
+    reset();
+    if (step === "found") resolveBarcode("7500025005071");
+    if (step === "mismatch") resolveBarcode("7500025005095");
+    if (step === "unknown") resolveBarcode("7501035911208");
+    if (step === "assign") { resolveBarcode("7501035911208"); openSheet(); }
+  }
+
+  // ---- Eventos ----
+  $("modeNumber").onclick = () => setMode("number");
+  $("modeText").onclick = () => setMode("text");
+  $("modeBarcode").onclick = () => setMode("barcode");
+  btnScan.onclick = () => codeField.classList.contains("is-scanning") ? (stopScan(), setStep("idle")) : startScan();
+  $("btnPicker").onclick = () => toast("Abre el buscador de productos por nombre (sin cambios)");
+  codeInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); lookupTyped(); } });
+  codeInput.addEventListener("focus", () => codeField.classList.add("focus"));
+  codeInput.addEventListener("blur", () => codeField.classList.remove("focus"));
+  qtyInput.addEventListener("input", refreshDiff);
+  qtyInput.addEventListener("blur", () => qtyField.classList.remove("focus"));
+  qtyInput.addEventListener("focus", () => qtyField.classList.add("focus"));
+  qtyInput.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $("btnAdd").click(); } });
+
+  $("btnAdd").onclick = () => {
+    const qty = parseFloat((qtyInput.value || "").replace(",", "."));
+    if (!current || !(qty > 0)) { toast(current ? "Escribe la cantidad contada" : "Escanea o escribe un código"); return; }
+    counts.unshift({ id: current.id, qty });
+    renderCounts(0);
+    const id = current.id;
+    reset();
+    toast("Conteo agregado: " + id + " · " + fmt(qty));
+  };
+  $("btnCancel").onclick = reset;
+  $("mmDiscard").onclick = reset;
+  $("mmUse").onclick = () => {
+    const hit = BARCODES[pendingCode];
+    showFound(productById(hit.id), pendingCode, hit.pres, true);
+  };
+  $("ukDiscard").onclick = reset;
+  $("ukAssign").onclick = openSheet;
+  sheetSearch.addEventListener("input", renderPicks);
+  picks.addEventListener("click", (e) => {
+    const b = e.target.closest(".pick");
+    if (!b) return;
+    selectedPick = b.dataset.id;
+    renderPicks();
+    updateConfirm();
+  });
+  $("sheetCancel").onclick = () => { closeSheet(); setStep("unknown"); };
+  sheet.addEventListener("click", (e) => { if (e.target === sheet) { closeSheet(); setStep("unknown"); } });
+  sheetConfirm.onclick = () => {
+    if (!selectedPick) return;
+    BARCODES[pendingCode] = { id: selectedPick, pres: INVENTORY_PRES };
+    const code = pendingCode;
+    closeSheet();
+    showFound(productById(selectedPick), code, INVENTORY_PRES, false);
+    toast("Código asignado a " + selectedPick + " · " + INVENTORY_PRES);
+  };
+  document.querySelectorAll("#steps button").forEach(b => b.onclick = () => goTo(b.dataset.go));
+  document.querySelectorAll(".samples code").forEach(c => c.onclick = () => {
+    setMode("barcode");
+    codeInput.value = c.textContent;
+    lookupTyped();
+  });
+
+  renderCounts(-1);
+  setStep("idle");
+})();
+</script>

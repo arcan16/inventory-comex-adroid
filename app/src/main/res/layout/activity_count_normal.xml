@@ -54,6 +54,13 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/toggle_text" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnToggleBarcode"
+                        style="@style/App.Button.Toggle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/toggle_barcode" />
                 </com.google.android.material.button.MaterialButtonToggleGroup>
 
                 <LinearLayout
@@ -62,7 +69,7 @@
                     android:orientation="horizontal"
                     android:layout_marginTop="12dp">
                     <LinearLayout style="@style/App.Field" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="8dp">
-                        <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_code_label" />
+                        <TextView android:id="@+id/tvCodeLabel" style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_code_label" />
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -92,6 +99,18 @@
                                 android:src="@drawable/ic_search"
                                 app:tint="?attr/colorOnSurfaceVariant"
                                 android:contentDescription="@string/count_search_product" />
+                            <ImageView
+                                android:id="@+id/btnScanBarcode"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_marginStart="8dp"
+                                android:padding="2dp"
+                                android:clickable="true"
+                                android:focusable="true"
+                                android:foreground="?attr/selectableItemBackgroundBorderless"
+                                android:src="@drawable/ic_barcode"
+                                app:tint="?attr/colorPrimary"
+                                android:contentDescription="@string/product_barcode_scan_action" />
                         </LinearLayout>
                     </LinearLayout>
                     <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
@@ -109,6 +128,104 @@
                     android:visibility="gone"
                     tools:visibility="visible"
                     tools:text="THINNER E" />
+
+                <!-- Codigo de barras con el que se encontro el producto (verde) o de otra presentacion (ambar). -->
+                <TextView
+                    android:id="@+id/tvBarcodeInfo"
+                    style="@style/App.Chip.Good"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:fontFamily="monospace"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:text="7500025005071 · 1 LT" />
+
+                <!-- El codigo leido es de otra presentacion distinta a la del inventario. -->
+                <LinearLayout
+                    android:id="@+id/barcodeMismatchContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_banner_warn"
+                    android:orientation="vertical"
+                    android:padding="12dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+                    <TextView
+                        android:id="@+id/tvBarcodeMismatch"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/md_theme_onTertiaryContainer"
+                        tools:text="El código 7500025005095 es de 1100 · REAL FLEX NF BLANCO en 4 LTS." />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnBarcodeDiscard"
+                            style="@style/App.Button.Primary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/md_theme_onTertiaryContainer"
+                            android:textColor="@color/md_theme_tertiaryContainer"
+                            android:text="@string/count_barcode_discard" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnBarcodeUseAnyway"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textColor="@color/md_theme_onTertiaryContainer"
+                            tools:text="Contar 1100 de todos modos" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- El codigo leido no pertenece a ninguna presentacion. -->
+                <LinearLayout
+                    android:id="@+id/barcodeUnknownContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_banner_error"
+                    android:orientation="vertical"
+                    android:padding="12dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+                    <TextView
+                        android:id="@+id/tvBarcodeUnknown"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBodyMedium"
+                        android:textColor="@color/md_theme_onErrorContainer"
+                        tools:text="El código 7501035911208 no está registrado en ninguna presentación." />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnBarcodeAssign"
+                            style="@style/App.Button.Primary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/md_theme_error"
+                            android:textColor="@color/md_theme_onError"
+                            android:text="@string/count_barcode_assign" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnBarcodeUnknownDiscard"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:textColor="@color/md_theme_onErrorContainer"
+                            android:text="@string/count_barcode_discard_short" />
+                    </LinearLayout>
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/newProductContainer"

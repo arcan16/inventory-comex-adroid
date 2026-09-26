@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="8dp">
+
+    <LinearLayout
+        style="@style/App.Field.Disabled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            style="@style/App.Field.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/products_col_id" />
+        <TextView
+            android:id="@+id/tvPickerProductId"
+            style="@style/App.Field.Value.Muted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="monospace" />
+    </LinearLayout>
+
+    <LinearLayout
+        style="@style/App.Field.Disabled"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp">
+        <TextView
+            style="@style/App.Field.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/products_col_description" />
+        <TextView
+            android:id="@+id/tvPickerDescription"
+            style="@style/App.Field.Value.Muted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:maxLines="2"
+            android:ellipsize="end" />
+    </LinearLayout>
+
+    <TextView
+        style="@style/App.SectionLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:text="@string/product_presentations_label" />
+
+    <ProgressBar
+        android:id="@+id/progressPresentations"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginVertical="12dp" />
+
+    <TextView
+        android:id="@+id/tvPresentationsMessage"
+        style="@style/App.ListRow.Subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="8dp"
+        android:gravity="center"
+        android:visibility="gone" />
+
+    <!-- Renglones item_product_presentation, uno por presentacion (maximo 8). -->
+    <LinearLayout
+        android:id="@+id/presentationsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+</LinearLayout>

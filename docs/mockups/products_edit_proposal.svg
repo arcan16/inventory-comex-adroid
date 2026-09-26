@@ -1,0 +1,89 @@
+<svg viewBox="0 0 320 660" xmlns="http://www.w3.org/2000/svg" font-family="Arial, Helvetica, sans-serif">
+  <defs>
+    <clipPath id="screen-pe">
+      <rect x="8" y="8" width="304" height="644" rx="26"/>
+    </clipPath>
+  </defs>
+
+  <rect x="0" y="0" width="320" height="660" rx="32" fill="#0B0F1A"/>
+
+  <g clip-path="url(#screen-pe)">
+    <rect x="8" y="8" width="304" height="644" fill="#F1F2F5"/>
+
+    <rect x="8" y="8" width="304" height="20" fill="#1E4FB8"/>
+    <text x="24" y="22" font-size="10" fill="#FFFFFF">9:41</text>
+
+    <rect x="8" y="28" width="304" height="52" fill="#1E4FB8"/>
+    <path d="M 30 54 l 8 -8 M 30 54 l 8 8" stroke="#FFFFFF" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+    <text x="50" y="60" font-size="16" font-weight="bold" fill="#FFFFFF">Productos</text>
+
+    <!-- search box -->
+    <rect x="24" y="96" width="272" height="42" rx="10" fill="#FFFFFF" stroke="#D8DCE4"/>
+    <circle cx="44" cy="117" r="6" fill="none" stroke="#5C6A82" stroke-width="1.5"/>
+    <line x1="48.5" y1="121.5" x2="53" y2="126" stroke="#5C6A82" stroke-width="1.5" stroke-linecap="round"/>
+    <text x="62" y="122" font-size="11.5" fill="#9AA5B4">Buscar por código o descripción</text>
+
+    <text x="24" y="158" font-size="9" letter-spacing="1" fill="#5C6A82">ID</text>
+    <text x="296" y="158" text-anchor="end" font-size="9" letter-spacing="1" fill="#5C6A82">DESCRIPCIÓN</text>
+
+    <!-- renglon seleccionado (nuevo: fila tocable, ya no de solo lectura) -->
+    <rect x="16" y="167" width="288" height="49" fill="#E4ECFB"/>
+    <rect x="16" y="167" width="3" height="49" fill="#1E4FB8"/>
+    <text x="28" y="197" font-size="13" font-family="monospace" font-weight="bold" fill="#0B2B66">10292</text>
+    <text x="260" y="197" text-anchor="end" font-size="12" fill="#0B2B66">THINNER E</text>
+    <path d="M 273 189 l 7 -7 l 4 4 l -7 7 h-4z" fill="none" stroke="#1E4FB8" stroke-width="1.4"/>
+
+    <rect x="16" y="216" width="288" height="1" fill="#D8DCE4"/>
+    <text x="24" y="245" font-size="13" font-family="monospace" fill="#14203A">1100</text>
+    <text x="296" y="245" text-anchor="end" font-size="12" fill="#5C6A82">REAL FLEX BLANCO</text>
+
+    <rect x="16" y="264" width="288" height="1" fill="#D8DCE4"/>
+    <text x="24" y="293" font-size="13" font-family="monospace" fill="#14203A">11710</text>
+    <text x="296" y="293" text-anchor="end" font-size="12" fill="#5C6A82">RESISTOL 5000 4 L</text>
+
+    <rect x="16" y="312" width="288" height="1" fill="#D8DCE4"/>
+    <text x="24" y="341" font-size="13" font-family="monospace" fill="#14203A">11801</text>
+    <text x="296" y="341" text-anchor="end" font-size="12" fill="#5C6A82">VINIMEX BIOSENSE SAT B1</text>
+
+    <rect x="16" y="360" width="288" height="1" fill="#D8DCE4"/>
+
+    <!-- scrim -->
+    <rect x="8" y="8" width="304" height="292" fill="#000000" opacity="0.4"/>
+
+    <!-- modal: editar producto -->
+    <rect x="8" y="300" width="304" height="300" rx="24" fill="#FFFFFF"/>
+    <rect x="145" y="314" width="30" height="4" rx="2" fill="#D8DCE4"/>
+
+    <text x="160" y="340" text-anchor="middle" font-size="13.5" font-weight="bold" fill="#14203A">Editar producto</text>
+
+    <!-- id: solo lectura -->
+    <rect x="24" y="358" width="272" height="50" rx="10" fill="#F7F8FA" stroke="#D8DCE4"/>
+    <text x="34" y="374" font-size="8" letter-spacing="1" fill="#5C6A82">ID</text>
+    <text x="34" y="394" font-size="13" font-family="monospace" fill="#5C6A82">10292</text>
+
+    <!-- codigo de barras: editable + escaner -->
+    <rect x="24" y="416" width="272" height="50" rx="10" fill="#FFFFFF" stroke="#D8DCE4"/>
+    <text x="34" y="432" font-size="8" letter-spacing="1" fill="#5C6A82">CÓDIGO DE BARRAS</text>
+    <text x="34" y="452" font-size="13" font-family="monospace" fill="#14203A">7501234567890</text>
+    <!-- icono escanear (mismo estilo que en Conteo Normal) -->
+    <rect x="257" y="433" width="1.4" height="16" fill="#0B6B5D"/>
+    <rect x="260.5" y="433" width="1" height="16" fill="#0B6B5D"/>
+    <rect x="263" y="433" width="2" height="16" fill="#0B6B5D"/>
+    <rect x="267" y="433" width="1" height="16" fill="#0B6B5D"/>
+    <rect x="269.5" y="433" width="1.4" height="16" fill="#0B6B5D"/>
+
+    <!-- descripcion: editable -->
+    <rect x="24" y="474" width="272" height="50" rx="10" fill="#FFFFFF" stroke="#1E4FB8" stroke-width="1.4"/>
+    <text x="34" y="490" font-size="8" letter-spacing="1" fill="#1E4FB8">DESCRIPCIÓN</text>
+    <text x="34" y="510" font-size="13" fill="#14203A">THINNER E</text>
+    <rect x="88" y="498" width="1.2" height="14" fill="#1E4FB8"/>
+
+    <!-- botones -->
+    <rect x="24" y="540" width="164" height="40" rx="9" fill="#1E4FB8"/>
+    <text x="106" y="565" text-anchor="middle" font-size="12" font-weight="bold" fill="#FFFFFF">Guardar cambios</text>
+    <rect x="196" y="540" width="100" height="40" rx="9" fill="none" stroke="#1E4FB8" stroke-width="1.4"/>
+    <text x="246" y="565" text-anchor="middle" font-size="12" font-weight="bold" fill="#1E4FB8">Cancelar</text>
+  </g>
+
+  <rect x="4" y="4" width="312" height="652" rx="30" fill="none" stroke="#1a1f2b" stroke-width="4"/>
+</svg>

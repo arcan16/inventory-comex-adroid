@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <LinearLayout
+            style="@style/App.Field.Disabled"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+            <TextView
+                style="@style/App.Field.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/products_col_id" />
+            <TextView
+                android:id="@+id/tvDialogProductId"
+                style="@style/App.Field.Value.Muted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/fieldPresentation"
+            style="@style/App.Field.Disabled"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp">
+            <TextView
+                style="@style/App.Field.Label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/product_presentation_label" />
+            <TextView
+                android:id="@+id/tvDialogPresentation"
+                style="@style/App.Field.Value.Muted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/fieldBarcode"
+        style="@style/App.Field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp">
+        <TextView
+            style="@style/App.Field.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/product_barcode_label" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <EditText
+                android:id="@+id/etDialogBarcode"
+                style="@style/App.Field.Value"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:padding="0dp"
+                android:minHeight="0dp"
+                android:fontFamily="monospace"
+                android:inputType="text"
+                android:maxLines="1"
+                android:hint="@string/product_barcode_hint" />
+            <!-- Solo visible cuando el campo tiene un codigo. -->
+            <ImageView
+                android:id="@+id/btnClearBarcode"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_marginStart="6dp"
+                android:padding="3dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_trash"
+                app:tint="?attr/colorError"
+                android:contentDescription="@string/product_barcode_clear_action" />
+            <ImageView
+                android:id="@+id/btnScanBarcode"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_marginStart="6dp"
+                android:padding="2dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_barcode"
+                app:tint="?attr/colorPrimary"
+                android:contentDescription="@string/product_barcode_scan_action" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        style="@style/App.Field"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp">
+        <TextView
+            style="@style/App.Field.Label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/products_col_description" />
+        <EditText
+            android:id="@+id/etDialogDescription"
+            style="@style/App.Field.Value"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:padding="0dp"
+            android:minHeight="0dp"
+            android:inputType="textCapCharacters"
+            android:maxLines="2" />
+    </LinearLayout>
+</LinearLayout>
