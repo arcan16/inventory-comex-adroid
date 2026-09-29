@@ -115,6 +115,12 @@
     <string name="toggle_text">Texto</string>
     <string name="toggle_barcode">Barras</string>
     <string name="count_code_label">Código</string>
+    <string name="count_finish_action">Finalizar conteo</string>
+    <string name="count_finish_confirm_title">Finalizar conteo</string>
+    <string name="count_finish_confirm_message">Se cerrará el inventario %1$s y ya no se podrán registrar más conteos en él. Podrás reabrirlo desde la lista de inventarios.</string>
+    <string name="count_finish_confirm_action">Finalizar</string>
+    <string name="count_finish_success">Conteo finalizado</string>
+    <string name="count_finish_error">No fue posible finalizar el conteo: %1$s</string>
     <string name="count_barcode_label">Código de barras</string>
     <string name="count_barcode_hint">Escanea o escribe el código</string>
     <string name="count_barcode_scanning_hint">Escaneando… toca para cancelar</string>
@@ -213,6 +219,10 @@
     <string name="count_summary_export_open_chooser">Abrir reporte con</string>
     <string name="count_summary_export_no_viewer">No hay una app instalada para abrir archivos PDF</string>
     <string name="count_summary_empty">Todavía no hay conteos registrados</string>
+    <string name="count_summary_tab_total">Conteo total</string>
+    <string name="count_summary_tab_differences">Diferencias</string>
+    <string name="count_summary_tab_differences_count">Diferencias (%1$d)</string>
+    <string name="count_summary_no_differences">Sin diferencias: todo lo contado coincide con el stock</string>
     <string name="count_summary_load_error">No fue posible cargar el resumen del inventario</string>
     <string name="count_summary_load_more_error">No fue posible cargar mas elementos, desliza para reintentar</string>
 

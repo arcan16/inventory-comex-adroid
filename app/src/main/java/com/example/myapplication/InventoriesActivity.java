@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -29,6 +31,14 @@ import retrofit2.Response;
 public class InventoriesActivity extends BaseActivity implements InventoryAdapter.OnInventoryActionListener {
 
     private static final int PAGE_SIZE = 50;
+
+    /** RESULT_OK = el conteo se finalizo (inventario cerrado): se recarga la lista para reflejarlo. */
+    private final ActivityResultLauncher<Intent> normalCountLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK) {
+                    loadInventories(false);
+                }
+            });
 
     private ServerPreferences serverPreferences;
     private SessionPreferences sessionPreferences;
@@ -167,7 +177,7 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
         intent.putExtra(CountNormalActivity.EXTRA_INVENTORY_ID, inventory.getId());
         intent.putExtra(CountNormalActivity.EXTRA_PRESENTATION, inventory.getPresentation());
         intent.putExtra(CountNormalActivity.EXTRA_DATE, inventory.getDate());
-        startActivity(intent);
+        normalCountLauncher.launch(intent);
     }
 
     private void reopenInventory(InventoryDTO inventory) {

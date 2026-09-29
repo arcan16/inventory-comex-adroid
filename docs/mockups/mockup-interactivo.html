@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ComexConteo · Maqueta interactiva</title>
+<style>
+:root{
+  --primary:#1E4FB8;--on-primary:#FFFFFF;--primary-c:#E4ECFB;--on-primary-c:#0B2B66;
+  --tertiary:#D9860F;--tertiary-c:#FBEBD3;--on-tertiary-c:#4A2E02;
+  --error:#C43B3B;--error-c:#FBE2E2;--on-error-c:#5C1414;
+  --success:#1F8A57;--success-c:#DFF3E8;--on-success-c:#0C3D22;
+  --bg:#F1F2F5;--surface:#FFFFFF;--surface-v:#F7F8FA;--on-surface:#14203A;--on-surface-v:#5C6A82;--outline:#D8DCE4;--divider:#EEF0F3;
+  --page:#E3E6EC;--page-ink:#14203A;--page-muted:#5C6A82;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Roboto,"Segoe UI",system-ui,-apple-system,Arial,sans-serif;background:var(--page);color:var(--page-ink);-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0}
+svg{width:20px;height:20px;flex-shrink:0}
+
+/* ---------- layout de presentación ---------- */
+.stage{min-height:100%;display:flex;gap:40px;align-items:flex-start;justify-content:center;padding:32px 16px}
+.side{width:280px;flex-shrink:0}
+.side h1{font-size:22px;line-height:1.25;font-weight:600;margin-bottom:6px}
+.side p{font-size:14px;line-height:1.5;color:var(--page-muted);margin-bottom:16px}
+.disclaimer{display:inline-flex;gap:6px;align-items:center;background:var(--tertiary-c);color:var(--on-tertiary-c);font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;margin-bottom:16px}
+.jump{display:flex;flex-direction:column;gap:2px}
+.jump button{text-align:left;font-size:14px;padding:7px 12px;border-radius:8px;color:var(--page-ink)}
+.jump button:hover{background:rgba(30,79,184,.08)}
+.jump button.on{background:var(--primary);color:#fff;font-weight:600}
+.jump .grp{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--page-muted);margin:12px 12px 4px}
+.hint{font-size:12px;color:var(--page-muted);margin-top:16px;line-height:1.5}
+
+.phone{width:380px;height:800px;border-radius:44px;background:#0B0F1A;padding:10px;box-shadow:0 30px 60px rgba(11,43,102,.25);flex-shrink:0;position:sticky;top:16px}
+.screen-wrap{position:relative;width:100%;height:100%;border-radius:34px;overflow:hidden;background:var(--bg);color:var(--on-surface)}
+
+@media (max-width:760px){
+  .stage{padding:0;display:block}
+  .side{display:none}
+  .phone{width:100%;height:100vh;height:100dvh;border-radius:0;padding:0;box-shadow:none;position:relative;top:0}
+  .screen-wrap{border-radius:0}
+}
+
+/* ---------- pantallas ---------- */
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg)}
+.screen.active{display:flex;animation:fade .18s ease-out}
+@keyframes fade{from{opacity:.4;transform:translateX(6px)}to{opacity:1;transform:none}}
+.status{height:28px;flex-shrink:0;background:var(--primary);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:space-between;padding:0 22px}
+.status.light{background:var(--bg);color:var(--on-surface)}
+.appbar{flex-shrink:0;min-height:60px;background:var(--primary);color:#fff;display:flex;align-items:center;gap:4px;padding:0 4px 0 4px}
+.appbar .ttl{flex:1;padding-left:12px;min-width:0}
+.appbar .ttl b{display:block;font-size:19px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.appbar .ttl small{display:block;font-size:12px;color:#D7E2FA;margin-top:1px}
+.icon-btn{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:inherit;flex-shrink:0}
+.icon-btn:hover{background:rgba(255,255,255,.12)}
+.icon-btn.dark:hover{background:rgba(20,32,58,.07)}
+.icon-btn svg{width:22px;height:22px}
+.body{flex:1;overflow-y:auto;padding:16px}
+.body::-webkit-scrollbar{width:0}
+
+.bottom-nav{flex-shrink:0;height:72px;background:var(--surface);border-top:1px solid var(--outline);display:flex}
+.bottom-nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;color:var(--on-surface-v)}
+.bottom-nav button .pill{width:56px;height:30px;border-radius:15px;display:grid;place-items:center}
+.bottom-nav button svg{width:22px;height:22px}
+.bottom-nav button.on{color:var(--primary);font-weight:600}
+.bottom-nav button.on .pill{background:var(--primary-c)}
+
+/* ---------- componentes ---------- */
+.card{background:var(--surface);border:1px solid var(--outline);border-radius:14px}
+.btn{height:48px;border-radius:10px;padding:0 20px;font-size:15px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.filled{background:var(--primary);color:#fff}
+.btn.filled:hover{background:#1A45A2}
+.btn.outlined{border:1.5px solid var(--primary);color:var(--primary)}
+.btn.outlined:hover{background:var(--primary-c)}
+.btn.text{color:var(--primary);padding:0 12px}
+.btn.danger{background:var(--error);color:#fff}
+.btn.block{width:100%}
+.btn svg{width:18px;height:18px}
+.btn:disabled{opacity:.55;cursor:default}
+
+.field{background:var(--surface);border:1px solid var(--outline);border-radius:10px;padding:8px 12px 8px;display:flex;flex-direction:column;min-height:56px;justify-content:center;position:relative}
+.field:focus-within{border-color:var(--primary);box-shadow:0 0 0 1px var(--primary)}
+.field label{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--on-surface-v)}
+.field input,.field select{border:0;outline:0;background:transparent;font-size:16px;padding:2px 0;width:100%;appearance:none}
+.field.ro{background:var(--surface-v)}
+.field.ro .val{font-size:16px;color:var(--on-surface-v);padding:2px 0}
+.field .trail{position:absolute;right:4px;bottom:4px}
+.field.err{border-color:var(--error)}
+.err-msg{font-size:12px;color:var(--error);margin:4px 4px 0}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--outline);border-radius:12px;height:48px;padding:0 12px}
+.search:focus-within{border-color:var(--primary)}
+.search svg{width:20px;height:20px;color:var(--on-surface-v);flex-shrink:0}
+.search input{flex:1;border:0;outline:0;background:transparent;font-size:15px}
+
+.row{display:flex;gap:8px}
+.row>*{flex:1;min-width:0}
+.stack>*+*{margin-top:12px}
+.label-sm{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--on-surface-v)}
+.muted{color:var(--on-surface-v)}
+.mono{font-family:"Roboto Mono",Consolas,monospace}
+
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:12px;font-size:12px;font-weight:600;white-space:nowrap}
+.chip.primary{background:var(--primary-c);color:var(--on-primary-c)}
+.chip.good{background:var(--success-c);color:var(--on-success-c)}
+.chip.warn{background:var(--tertiary-c);color:var(--on-tertiary-c)}
+.chip.bad{background:var(--error-c);color:var(--on-error-c)}
+.chip.neutral{background:#E8EBF0;color:#3C4760}
+
+.seg{display:flex;border:1.5px solid var(--primary);border-radius:10px;overflow:hidden;height:40px}
+.seg button{flex:1;font-size:14px;font-weight:600;color:var(--primary)}
+.seg button+button{border-left:1.5px solid var(--primary)}
+.seg button.on{background:var(--primary);color:#fff}
+
+.list-head{display:flex;padding:0 16px;margin:16px 0 8px}
+.list-head span{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--on-surface-v)}
+.list{background:var(--surface);border:1px solid var(--outline);border-radius:14px;overflow:hidden}
+.li{display:flex;align-items:center;gap:8px;min-height:56px;padding:8px 8px 8px 16px;border-top:1px solid var(--divider)}
+.li:first-child{border-top:0}
+.li.tap{cursor:pointer}
+.li.tap:hover{background:var(--surface-v)}
+.li .grow{flex:1;min-width:0}
+.li .t{font-size:15px;font-weight:500}
+.li .s{font-size:13px;color:var(--on-surface-v);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.pos{color:var(--success)}.neg{color:var(--error)}.zero{color:var(--on-surface-v)}
+.empty{padding:32px 16px;text-align:center;color:var(--on-surface-v);font-size:14px}
+
+/* ---------- login ---------- */
+.login{flex:1;display:flex;flex-direction:column;padding:32px 24px 16px;overflow-y:auto}
+.logo{width:72px;height:72px;border-radius:20px;background:var(--primary);display:grid;place-items:center;color:#fff;margin:24px auto 16px;box-shadow:0 8px 20px rgba(30,79,184,.3)}
+.logo svg{width:38px;height:38px}
+.login h2{text-align:center;font-size:24px;font-weight:600}
+.login .sub{text-align:center;color:var(--on-surface-v);font-size:15px;margin:4px 0 32px}
+.foot-link{margin-top:auto;padding-top:24px;text-align:center;font-size:13px;color:var(--on-surface-v)}
+.foot-link button{color:var(--primary);font-weight:600;padding:12px 4px}
+.pw-toggle{width:40px;height:40px;display:grid;place-items:center;color:var(--on-surface-v)}
+.pw-toggle svg{width:20px;height:20px}
+
+/* ---------- home ---------- */
+.greet{margin-bottom:16px}
+.greet b{font-size:22px;font-weight:600;display:block}
+.greet span{font-size:14px;color:var(--on-surface-v)}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--surface);border:1px solid var(--outline);border-radius:16px;padding:16px;text-align:left;min-height:124px;display:flex;flex-direction:column;transition:box-shadow .15s}
+.tile:hover{box-shadow:0 4px 14px rgba(30,79,184,.12)}
+.tile .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;margin-bottom:auto}
+.tile .ic svg{width:24px;height:24px}
+.tile b{font-size:16px;font-weight:600;margin-top:12px}
+.tile span{font-size:13px;color:var(--on-surface-v);margin-top:2px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:24px}
+.kpi{background:var(--surface);border:1px solid var(--outline);border-radius:12px;padding:12px}
+.kpi b{font-size:22px;font-weight:600;display:block;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--on-surface-v)}
+.section-t{font-size:16px;font-weight:600;margin:24px 0 8px}
+
+/* ---------- conteo ---------- */
+.desc-chip{margin:8px 0 0 2px}
+.count-actions{display:flex;gap:8px;margin-top:12px}
+.count-actions .filled{flex:1.6}.count-actions .outlined{flex:1}
+.act{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--on-surface-v)}
+.act:hover{background:var(--surface-v)}
+.act.del{color:var(--error)}
+.act svg{width:20px;height:20px}
+.new-flash{animation:flash 1.2s ease-out}
+@keyframes flash{from{background:var(--success-c)}to{background:var(--surface)}}
+
+/* ---------- resumen ---------- */
+.sum-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.sum-kpis .kpi b{font-size:18px}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--on-surface-v);font-weight:500;text-align:left;padding:12px 8px 8px}
+.tbl th.num{text-align:right}
+.tbl td{padding:12px 8px;border-top:1px solid var(--divider);font-variant-numeric:tabular-nums}
+.tbl td:first-child,.tbl th:first-child{padding-left:16px}
+.tbl td:last-child,.tbl th:last-child{padding-right:16px}
+.tbl td small{display:block;font-size:12px;color:var(--on-surface-v);margin-top:2px}
+
+/* ---------- stock ---------- */
+.pres{display:flex;align-items:center;gap:16px;padding:16px;margin-bottom:12px;width:100%;text-align:left}
+.pres .ic{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;flex-shrink:0}
+.pres .ic svg{width:26px;height:26px}
+.pres b{font-size:17px;font-weight:600;display:block}
+.pres span{font-size:13px;color:var(--on-surface-v)}
+.pres .chev{margin-left:auto;color:var(--on-surface-v)}
+
+/* ---------- producto picker ---------- */
+.banner{display:flex;gap:12px;padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.4;margin-bottom:12px}
+.banner svg{width:20px;height:20px;flex-shrink:0;margin-top:1px}
+.banner.warn{background:var(--tertiary-c);color:var(--on-tertiary-c)}
+.banner.info{background:var(--primary-c);color:var(--on-primary-c)}
+
+/* ---------- overlays ---------- */
+.scrim{position:absolute;inset:0;background:rgba(11,15,26,.45);display:none;align-items:center;justify-content:center;padding:24px;z-index:20}
+.scrim.show{display:flex;animation:fadeIn .15s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.dialog{background:var(--surface);border-radius:24px;padding:24px;width:100%;max-width:320px;box-shadow:0 20px 40px rgba(0,0,0,.25)}
+.dialog h3{font-size:20px;font-weight:600;margin-bottom:12px}
+.dialog p{font-size:15px;line-height:1.5;color:var(--on-surface-v)}
+.dialog .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:24px}
+.menu{position:absolute;z-index:21;background:var(--surface);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.2);padding:8px 0;min-width:200px;display:none}
+.menu.show{display:block}
+.menu button{display:flex;align-items:center;gap:12px;width:100%;height:48px;padding:0 16px;font-size:15px;text-align:left}
+.menu button:hover{background:var(--surface-v)}
+.menu button svg{width:20px;height:20px;color:var(--on-surface-v)}
+.menu button.del,.menu button.del svg{color:var(--error)}
+.snack{position:absolute;left:16px;right:16px;bottom:88px;background:#2A3244;color:#fff;border-radius:10px;padding:14px 16px;font-size:14px;z-index:30;display:flex;align-items:center;gap:12px;opacity:0;transform:translateY(12px);pointer-events:none;transition:.2s}
+.snack.show{opacity:1;transform:none}
+.snack svg{width:20px;height:20px;color:#8FE3B8;flex-shrink:0}
+.scan{position:absolute;inset:0;background:#05070C;z-index:25;display:none;flex-direction:column;align-items:center;justify-content:center;color:#fff;gap:24px}
+.scan.show{display:flex}
+.scan .frame{width:240px;height:160px;border:3px solid rgba(255,255,255,.85);border-radius:16px;position:relative;overflow:hidden}
+.scan .laser{position:absolute;left:10px;right:10px;height:2px;background:#FF5A5A;box-shadow:0 0 12px #FF5A5A;animation:laser 1.4s ease-in-out infinite alternate}
+@keyframes laser{from{top:12px}to{top:144px}}
+.scan p{font-size:15px;color:#C9D2E3}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <aside class="side">
+    <div class="disclaimer">⚠ Datos ficticios · solo demostración</div>
+    <h1>ComexConteo<br>Maqueta interactiva</h1>
+    <p>Prototipo navegable de la app Android de conteo físico de inventario. Toca los botones dentro del teléfono o salta directo a una pantalla.</p>
+    <nav class="jump" id="jump"></nav>
+    <p class="hint">Prueba: en <b>Conteo físico</b> escribe el código <span class="mono">10350</span> y una cantidad, luego toca Agregar. Revisa las diferencias en <b>Resumen</b>.</p>
+  </aside>
+
+  <div class="phone">
+    <div class="screen-wrap" id="app">
+
+      <!-- ================= LOGIN ================= -->
+      <section class="screen" id="login" data-title="Login" data-group="Sesión">
+        <div class="status light"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="login">
+          <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6a1 1 0 0 1 1 1v1H8V5a1 1 0 0 1 1-1z"/><path d="M8 5H6a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1h-2"/><path d="M9 13l2 2 4-4"/></svg></div>
+          <h2>Inventarios y Stock</h2>
+          <p class="sub">Sucursal Demo Norte</p>
+          <div class="stack">
+            <div class="field"><label for="lu">Usuario</label><input id="lu" value="mlopez" autocomplete="off"></div>
+            <div class="field"><label for="lp">Contraseña</label><input id="lp" type="password" value="demo1234"><div class="trail"><button class="pw-toggle" aria-label="Mostrar contraseña" onclick="togglePw()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+            <div id="loginErr" class="err-msg" hidden>Escribe tu usuario y contraseña</div>
+            <button class="btn filled block" id="loginBtn" onclick="doLogin()">Iniciar sesión</button>
+          </div>
+          <div class="foot-link">Servidor: 192.168.1.72:8080 · <button onclick="go('server')">Configurar</button></div>
+        </div>
+      </section>
+
+      <!-- ================= SERVER ================= -->
+      <section class="screen" id="server" data-title="Configurar servidor" data-group="Sesión">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b>Configurar servidor</b><small>Red local · sin dominio</small></div></div>
+        <div class="body">
+          <div class="banner info">${ICON.wifi}<span>La app se conecta directo a la IP del backend dentro del Wi-Fi del almacén.</span></div>
+          <div class="row" style="flex:none">
+            <div class="field" style="flex:2"><label for="sip">Dirección IP</label><input id="sip" value="192.168.1.72" oninput="updUrl()"></div>
+            <div class="field" style="flex:1"><label for="spt">Puerto</label><input id="spt" value="8080" inputmode="numeric" oninput="updUrl()"></div>
+          </div>
+          <div class="field ro" style="margin-top:12px"><label>URL resultante</label><div class="val mono" id="surl">http://192.168.1.72:8080</div></div>
+          <div id="sstat" style="margin-top:12px"></div>
+          <button class="btn outlined block" style="margin-top:12px" onclick="testConn()">Probar conexión</button>
+          <div class="section-t">Redes guardadas</div>
+          <div class="list">
+            <div class="li tap" onclick="setSrv('192.168.1.72','8080')"><div class="grow"><div class="t mono">192.168.1.72:8080</div><div class="s">Almacén principal · hace 2 h</div></div><span class="chip good">Actual</span></div>
+            <div class="li tap" onclick="setSrv('10.0.0.15','8080')"><div class="grow"><div class="t mono">10.0.0.15:8080</div><div class="s">Bodega anexa · 12 sep 2026</div></div></div>
+          </div>
+        </div>
+        <div style="padding:16px;background:var(--bg)"><button class="btn filled block" onclick="toast('Servidor guardado');back()">Guardar y continuar</button></div>
+      </section>
+
+      <!-- ================= HOME ================= -->
+      <section class="screen" id="home" data-title="Inicio" data-group="Principal">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><div class="ttl"><b>Inicio</b></div><button class="icon-btn" aria-label="Mi cuenta" onclick="go('account')">${ICON.person}</button><button class="icon-btn" aria-label="Cerrar sesión" onclick="dlg('Cerrar sesión','¿Seguro que quieres cerrar sesión?','Cerrar sesión',()=>go('login',true))">${ICON.logout}</button></div>
+        <div class="body">
+          <div class="greet"><b>Hola, Mariana</b><span>Sábado 26 de septiembre de 2026</span></div>
+          <div class="tiles">
+            <button class="tile" onclick="go('inventories')"><div class="ic" style="background:var(--primary-c);color:var(--primary)">${ICON.clip}</div><b>Inventarios</b><span>Conteos físicos</span></button>
+            <button class="tile" onclick="go('reports')"><div class="ic" style="background:var(--tertiary-c);color:#A8650A">${ICON.doc}</div><b>Reportes</b><span>Resumen por fecha</span></button>
+            <button class="tile" onclick="go('products')"><div class="ic" style="background:var(--success-c);color:var(--success)">${ICON.box}</div><b>Productos</b><span>Catálogo</span></button>
+            <button class="tile" onclick="go('stock')"><div class="ic" style="background:var(--error-c);color:var(--error)">${ICON.layers}</div><b>Stock</b><span>Por presentación</span></button>
+          </div>
+          <div class="kpis">
+            <div class="kpi"><b>2</b><span>Abiertos</span></div>
+            <div class="kpi"><b id="kpiCounts">5</b><span>Conteos hoy</span></div>
+            <div class="kpi"><b>1.284</b><span>Productos</span></div>
+          </div>
+          <div class="section-t">Continuar donde te quedaste</div>
+          <div class="list"><div class="li tap" onclick="openInv(52)"><div class="grow"><div class="t">Galones · #52</div><div class="s">Abierto · 26 sep 2026 · <span id="homeCnt">5</span> conteos</div></div><span class="chev muted">${ICON.chev}</span></div></div>
+        </div>
+        <nav class="bottom-nav" data-nav="home"></nav>
+      </section>
+
+      <!-- ================= INVENTORIES ================= -->
+      <section class="screen" id="inventories" data-title="Inventarios" data-group="Conteo">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b>Inventarios</b></div><button class="icon-btn" aria-label="Cargar inventario" onclick="go('upload')">${ICON.plus}</button></div>
+        <div class="body">
+          <div class="list-head" style="margin-top:0"><span style="flex:1">Presentación</span><span>Fecha</span><span style="width:52px"></span></div>
+          <div class="list" id="invList"></div>
+        </div>
+      </section>
+
+      <!-- ================= UPLOAD ================= -->
+      <section class="screen" id="upload" data-title="Cargar inventario" data-group="Conteo">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b>Cargar inventario</b><small>Reporte de existencias</small></div></div>
+        <div class="body">
+          <button class="card" id="drop" onclick="pickCsv()" style="width:100%;border:2px dashed var(--outline);padding:32px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center">
+            <span style="color:var(--primary)">${ICON.upload}</span>
+            <b style="font-size:15px" id="dropT">Selecciona el reporte de existencias (.csv)</b>
+            <span class="muted" style="font-size:13px" id="dropM">Toca para buscar en tu dispositivo</span>
+          </button>
+          <div id="upRes" style="margin-top:16px"></div>
+        </div>
+        <div style="padding:16px"><button class="btn filled block" id="upBtn" disabled onclick="doUpload()">Procesar y crear inventario</button></div>
+      </section>
+
+      <!-- ================= COUNT NORMAL ================= -->
+      <section class="screen" id="count" data-title="Conteo físico" data-group="Conteo">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b>Conteo físico</b><small id="cSub">Galones · #52 · 26 sep 2026</small></div><button class="icon-btn" aria-label="Buscar producto por nombre" onclick="go('picker')">${ICON.search}</button></div>
+        <div class="body">
+          <div class="seg" role="tablist"><button class="on" onclick="seg(this)">Número</button><button onclick="seg(this)">Texto</button><button onclick="seg(this);scan()">Barras</button></div>
+          <div class="row" style="margin-top:12px">
+            <div class="field" id="fCode"><label for="cCode">Código</label><input id="cCode" inputmode="numeric" placeholder="Ej. 10350" oninput="lookup()"></div>
+            <div class="field ro"><label>Stock</label><div class="val" id="cStock">—</div></div>
+          </div>
+          <div class="desc-chip" id="cDesc"></div>
+          <div class="row" style="margin-top:12px">
+            <div class="field" id="fQty"><label for="cQty">Cantidad</label><input id="cQty" inputmode="decimal" placeholder="0.000" oninput="diff()"></div>
+            <div class="field ro"><label>Diferencia</label><div class="val" id="cDiff">—</div></div>
+          </div>
+          <div class="field" style="margin-top:12px"><label for="cPlace">Lugar</label><select id="cPlace"><option>Almacén</option><option>Piso de venta</option><option>Bodega anexa</option><option>Exhibidor</option></select><div class="trail muted" style="bottom:14px;right:12px;pointer-events:none">${ICON.down}</div></div>
+          <div id="cErr" class="err-msg" hidden></div>
+          <div class="count-actions"><button class="btn filled" id="cAdd" onclick="addCount()">${ICON.plus} Agregar</button><button class="btn outlined" onclick="clearCount()">Cancelar</button></div>
+
+          <div class="search" style="margin-top:24px">${ICON.search}<input id="cFilter" placeholder="Buscar en conteos registrados" oninput="renderCounts()"></div>
+          <div class="muted" style="font-size:13px;margin:8px 4px 0" id="cFound"></div>
+          <div class="list-head"><span style="width:72px">Id</span><span style="flex:1">Producto</span><span style="width:70px;text-align:right">Cant.</span><span style="width:52px"></span></div>
+          <div class="list" id="cList"></div>
+        </div>
+        <div style="padding:12px 16px;background:var(--bg);border-top:1px solid var(--outline)"><button class="btn outlined block" onclick="go('summary')">Resumen del conteo</button></div>
+      </section>
+
+      <!-- ================= PRODUCT PICKER ================= -->
+      <section class="screen" id="picker" data-title="Buscar producto" data-group="Conteo">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b>Buscar producto</b><small>Galones · #52</small></div></div>
+        <div class="body">
+          <div class="search">${ICON.search}<input id="pQ" placeholder="Nombre del producto…" oninput="renderPicker()"></div>
+          <div class="list" id="pList" style="margin-top:12px"></div>
+          <div class="banner warn" style="margin-top:16px">${ICON.alert}<span>¿Encontraste un producto físicamente que no está en el catálogo? Puedes darlo de alta desde aquí.</span></div>
+          <button class="btn outlined block" onclick="dlg('Nuevo producto','En la app real se abre un formulario para registrar código, descripción y presentación del producto encontrado.','Entendido')">${ICON.plus} Registrar producto nuevo</button>
+        </div>
+      </section>
+
+      <!-- ================= SUMMARY ================= -->
+      <section class="screen" id="summary" data-title="Resumen del conteo" data-group="Conteo">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b>Resumen</b><small>Galones · #52</small></div></div>
+        <div class="body">
+          <div class="sum-kpis" id="sKpi"></div>
+          <div class="seg" style="margin-bottom:12px"><button class="on" onclick="seg(this);sumF='all';renderSummary()">Todos</button><button onclick="seg(this);sumF='diff';renderSummary()">Con diferencia</button></div>
+          <div class="list"><table class="tbl"><thead><tr><th>Producto</th><th class="num">Stock</th><th class="num">Conteo</th><th class="num">Dif.</th></tr></thead><tbody id="sBody"></tbody></table></div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--outline)"><button class="btn filled block" onclick="exportPdf(this)">${ICON.download} Exportar PDF</button></div>
+      </section>
+
+      <!-- ================= REPORTS ================= -->
+      <section class="screen" id="reports" data-title="Reportes" data-group="Principal">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><div class="ttl"><b>Reportes</b></div></div>
+        <div class="body">
+          <div class="list-head" style="margin-top:0"><span style="flex:1">Fecha</span><span style="width:110px">Presentación</span><span style="width:48px"></span></div>
+          <div class="list" id="rList"></div>
+        </div>
+        <nav class="bottom-nav" data-nav="reports"></nav>
+      </section>
+
+      <!-- ================= PRODUCTS ================= -->
+      <section class="screen" id="products" data-title="Catálogo de productos" data-group="Principal">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><div class="ttl"><b>Productos</b><small id="prCount">1.284 productos</small></div></div>
+        <div class="body">
+          <div class="search">${ICON.search}<input id="prQ" placeholder="Buscar por código o descripción" oninput="renderProducts()"></div>
+          <div class="list-head"><span style="width:72px">Id</span><span style="flex:1">Descripción</span></div>
+          <div class="list" id="prList"></div>
+        </div>
+        <nav class="bottom-nav" data-nav="products"></nav>
+      </section>
+
+      <!-- ================= STOCK ================= -->
+      <section class="screen" id="stock" data-title="Stock por presentación" data-group="Principal">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><div class="ttl"><b>Stock</b></div></div>
+        <div class="body" id="stList"></div>
+        <nav class="bottom-nav" data-nav="stock"></nav>
+      </section>
+
+      <!-- ================= STOCK TYPE ================= -->
+      <section class="screen" id="stockType" data-title="Inventarios por tipo" data-group="Stock">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b id="stTitle">Galones</b><small id="stSub">4 LTS</small></div></div>
+        <div class="body"><div class="list" id="stInv"></div></div>
+      </section>
+
+      <!-- ================= STOCK SUMMARY ================= -->
+      <section class="screen" id="stockSum" data-title="Existencias del inventario" data-group="Stock">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b>Existencias</b><small id="ssSub">Galones · #52</small></div></div>
+        <div class="body">
+          <div class="search">${ICON.search}<input id="ssQ" placeholder="Filtrar por descripción…" oninput="renderStockSum()"></div>
+          <div class="list-head"><span style="flex:1">Producto</span><span>Existencia</span></div>
+          <div class="list" id="ssList"></div>
+        </div>
+      </section>
+
+      <!-- ================= ACCOUNT ================= -->
+      <section class="screen" id="account" data-title="Mi cuenta" data-group="Sesión">
+        <div class="status"><span>9:41</span><span>▾ ▮</span></div>
+        <div class="appbar"><button class="icon-btn" aria-label="Atrás" onclick="back()">${ICON.back}</button><div class="ttl"><b>Mi cuenta</b></div></div>
+        <div class="body stack">
+          <div style="display:flex;align-items:center;gap:16px;margin-bottom:8px"><div style="width:56px;height:56px;border-radius:50%;background:var(--primary-c);color:var(--on-primary-c);display:grid;place-items:center;font-size:20px;font-weight:600">ML</div><div><b style="font-size:17px">Mariana López</b><div class="muted" style="font-size:13px">Supervisora de almacén</div></div></div>
+          <div class="field"><label for="aU">Usuario</label><input id="aU" value="mlopez"></div>
+          <div class="field" id="fMail"><label for="aM">Correo</label><input id="aM" value="mlopez@demo-inventarios.test"></div>
+          <div class="section-t" style="margin-bottom:0">Cambiar contraseña</div>
+          <div class="muted" style="font-size:13px;margin-top:4px">Déjalo en blanco si no quieres cambiarla</div>
+          <div class="field" id="fP1"><label for="aP1">Nueva contraseña</label><input id="aP1" type="password"></div>
+          <div class="field" id="fP2"><label for="aP2">Confirmar contraseña</label><input id="aP2" type="password"></div>
+          <div id="aErr" class="err-msg" hidden></div>
+        </div>
+        <div style="padding:16px"><button class="btn filled block" onclick="saveAccount()">Guardar cambios</button></div>
+      </section>
+
+      <!-- overlays -->
+      <div class="scrim" id="scrim" onclick="if(event.target===this)closeDlg()"><div class="dialog" role="dialog"><h3 id="dT"></h3><p id="dM"></p><div class="acts"><button class="btn text" id="dC" onclick="closeDlg()">Cancelar</button><button class="btn text" id="dOk"></button></div></div></div>
+      <div class="menu" id="menu"></div>
+      <div class="snack" id="snack">${ICON.check}<span id="snackT"></span></div>
+      <div class="scan" id="scan" onclick="scanDone()"><div class="frame"><div class="laser"></div></div><p>Apunta al código de barras del envase</p><button class="btn outlined" style="color:#fff;border-color:#fff" onclick="event.stopPropagation();closeScan()">Cancelar</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- íconos (inline para que funcione sin internet) ---------- */
+const sv=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON={
+ back:sv('<path d="M15 18l-6-6 6-6"/>'),
+ chev:sv('<path d="M9 18l6-6-6-6"/>'),
+ down:sv('<path d="M6 9l6 6 6-6"/>'),
+ plus:sv('<path d="M12 5v14M5 12h14"/>'),
+ search:sv('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>'),
+ person:sv('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>'),
+ logout:sv('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>'),
+ clip:sv('<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 14l2 2 4-4"/>'),
+ doc:sv('<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>'),
+ box:sv('<path d="M21 8l-9-5-9 5v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/>'),
+ layers:sv('<path d="M12 2l10 5-10 5L2 7z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>'),
+ more:sv('<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>'),
+ edit:sv('<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>'),
+ trash:sv('<path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>'),
+ download:sv('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>'),
+ upload:sv('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>'),
+ check:sv('<path d="M20 6L9 17l-5-5"/>'),
+ alert:sv('<path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>'),
+ wifi:sv('<path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0M2 9a15 15 0 0 1 20 0M12 20h.01"/>'),
+ lock:sv('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
+ play:sv('<path d="M6 4l14 8-14 8z"/>'),
+ home:sv('<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>'),
+};
+// Sustituye los marcadores ${ICON.x} escritos en el HTML estático
+document.getElementById('app').innerHTML=document.getElementById('app').innerHTML.replace(/\$\{ICON\.(\w+)\}/g,(_,k)=>ICON[k]||'');
+
+/* ---------- datos ficticios ---------- */
+const PRODUCTS=[
+ {id:'10292',d:'THINNER ESTÁNDAR',p:'4 LTS'},{id:'10350',d:'ESMALTE ALQUIDÁLICO BLANCO',p:'4 LTS'},
+ {id:'10418',d:'SELLADOR VINÍLICO 5X1',p:'4 LTS'},{id:'10577',d:'PINTURA VINÍLICA MATE HUESO',p:'4 LTS'},
+ {id:'10602',d:'PINTURA VINÍLICA MATE BLANCO OSTIÓN',p:'4 LTS'},{id:'10745',d:'PRIMARIO ANTICORROSIVO GRIS',p:'4 LTS'},
+ {id:'10811',d:'ESMALTE ACRÍLICO NEGRO BRILLANTE',p:'4 LTS'},{id:'10933',d:'BARNIZ POLIURETANO TRANSPARENTE',p:'4 LTS'},
+ {id:'11024',d:'PINTURA TRÁFICO AMARILLO',p:'4 LTS'},{id:'11160',d:'IMPERMEABILIZANTE ACRÍLICO ROJO 5 AÑOS',p:'4 LTS'},
+ {id:'11205',d:'PINTURA VINÍLICA SATINADA AZUL CIELO',p:'4 LTS'},{id:'11388',d:'ESMALTE ANTIDERRAPANTE VERDE',p:'4 LTS'},
+ {id:'20114',d:'IMPERMEABILIZANTE ELASTOMÉRICO BLANCO',p:'19 LTS'},{id:'20277',d:'PINTURA VINÍLICA MATE BLANCO',p:'19 LTS'},
+ {id:'30051',d:'THINNER ESTÁNDAR',p:'1 LT'},{id:'30198',d:'ESMALTE ALQUIDÁLICO ROJO ÓXIDO',p:'1 LT'},
+ {id:'40012',d:'BROCHA 3 PULGADAS',p:'PIEZA'},{id:'40087',d:'RODILLO FELPA 9 PULGADAS',p:'PIEZA'},
+];
+const STOCK52={'10292':12,'10350':8,'10418':15,'10577':20,'10602':6,'10745':9,'10811':4,'10933':3,'11024':10,'11160':7,'11205':5,'11388':2};
+const byId=id=>PRODUCTS.find(p=>p.id===id);
+let counts=[
+ {n:1,id:'10292',q:12,place:'Almacén'},{n:2,id:'10418',q:13,place:'Almacén'},{n:3,id:'10577',q:14,place:'Almacén'},
+ {n:4,id:'10577',q:7,place:'Piso de venta'},{n:5,id:'10745',q:9,place:'Almacén'},
+];
+let nextN=6;
+const INVS=[
+ {id:52,pres:'Galones',size:'4 LTS',date:'26 sep 2026',st:'Abierto'},
+ {id:51,pres:'Cubetas',size:'19 LTS',date:'24 sep 2026',st:'Bloqueado'},
+ {id:50,pres:'Litros',size:'1 LT',date:'19 sep 2026',st:'Pendiente'},
+ {id:49,pres:'Galones',size:'4 LTS',date:'12 sep 2026',st:'Cerrado'},
+ {id:48,pres:'Piezas',size:'PIEZA',date:'05 sep 2026',st:'Cerrado'},
+ {id:47,pres:'Cubetas',size:'19 LTS',date:'29 ago 2026',st:'Cerrado'},
+];
+const ST_CHIP={Abierto:'good',Bloqueado:'bad',Pendiente:'warn',Cerrado:'neutral'};
+const REPORTS=[
+ {date:'24 sep 2026',time:'18:42',pres:'19 LTS',inv:51},{date:'19 sep 2026',time:'17:05',pres:'1 LT',inv:50},
+ {date:'12 sep 2026',time:'19:30',pres:'4 LTS',inv:49},{date:'05 sep 2026',time:'16:12',pres:'PIEZA',inv:48},
+ {date:'29 ago 2026',time:'18:55',pres:'19 LTS',inv:47},{date:'22 ago 2026',time:'17:40',pres:'4 LTS',inv:46},
+];
+const PRES=[
+ {k:'Cubetas',s:'19 LTS',ic:'layers',bg:'var(--error-c)',fg:'var(--error)',n:14},
+ {k:'Galones',s:'4 LTS',ic:'box',bg:'var(--primary-c)',fg:'var(--primary)',n:21},
+ {k:'Litros',s:'1 LT',ic:'box',bg:'var(--success-c)',fg:'var(--success)',n:9},
+ {k:'Piezas',s:'PIEZA',ic:'clip',bg:'var(--tertiary-c)',fg:'#A8650A',n:6},
+];
+const fmt=n=>n.toLocaleString('es-MX',{minimumFractionDigits:3,maximumFractionDigits:3});
+const sgn=n=>(n>0?'+':'')+fmt(n);
+const cls=n=>n>0?'pos':n<0?'neg':'zero';
+
+/* ---------- navegación ---------- */
+const hist=[];let cur=null;
+function go(id,reset){
+  closeMenu();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+  if(reset)hist.length=0;else if(cur&&cur!==id)hist.push(cur);
+  cur=id;
+  const s=document.getElementById(id);s.querySelector('.body')?.scrollTo(0,0);
+  if(RENDER[id])RENDER[id]();
+  document.querySelectorAll('#jump button').forEach(b=>b.classList.toggle('on',b.dataset.to===id));
+}
+function back(){go(hist.pop()||'home');hist.pop();}
+const NAV=[['home','Inicio','home'],['reports','Reportes','doc'],['products','Productos','box'],['stock','Stock','layers']];
+document.querySelectorAll('.bottom-nav').forEach(n=>{
+  n.innerHTML=NAV.map(([id,l,ic])=>`<button class="${n.dataset.nav===id?'on':''}" onclick="go('${id}',true)"><span class="pill">${ICON[ic]}</span>${l}</button>`).join('');
+});
+// índice lateral
+(function(){
+  let g='',h='';
+  document.querySelectorAll('.screen').forEach(s=>{
+    if(s.dataset.group!==g){g=s.dataset.group;h+=`<div class="grp">${g}</div>`;}
+    h+=`<button data-to="${s.id}" onclick="go('${s.id}')">${s.dataset.title}</button>`;
+  });
+  document.getElementById('jump').innerHTML=h;
+})();
+
+/* ---------- overlays ---------- */
+function dlg(t,m,ok,fn,danger){
+  dT.textContent=t;dM.textContent=m;dOk.textContent=ok;
+  dOk.style.color=danger?'var(--error)':'';
+  dC.hidden=!fn;
+  dOk.onclick=()=>{closeDlg();fn&&fn();};
+  scrim.classList.add('show');
+}
+function closeDlg(){scrim.classList.remove('show');}
+let snackT0;
+function toast(t){snackT.textContent=t;snack.classList.add('show');clearTimeout(snackT0);snackT0=setTimeout(()=>snack.classList.remove('show'),2200);}
+function openMenu(ev,items){
+  ev.stopPropagation();
+  const r=ev.currentTarget.getBoundingClientRect(),a=app.getBoundingClientRect();
+  menu.innerHTML=items.map((it,i)=>`<button class="${it.del?'del':''}" data-i="${i}">${ICON[it.ic]}${it.l}</button>`).join('');
+  menu.querySelectorAll('button').forEach(b=>b.onclick=()=>{closeMenu();items[b.dataset.i].fn();});
+  menu.classList.add('show');
+  const z=parseFloat(document.querySelector('.phone').style.zoom)||1;
+  const top=Math.min((r.bottom-a.top)/z,a.height/z-menu.offsetHeight-16);
+  menu.style.top=top+'px';menu.style.right=((a.right-r.right)/z+8)+'px';
+}
+function closeMenu(){menu.classList.remove('show');}
+document.addEventListener('click',closeMenu);
+
+/* ---------- login / servidor / cuenta ---------- */
+function togglePw(){lp.type=lp.type==='password'?'text':'password';}
+function doLogin(){
+  loginErr.hidden=!!(lu.value.trim()&&lp.value);
+  if(!loginErr.hidden)return;
+  loginBtn.disabled=true;loginBtn.textContent='Iniciando sesión…';
+  setTimeout(()=>{loginBtn.disabled=false;loginBtn.textContent='Iniciar sesión';go('home',true);},700);
+}
+function updUrl(){surl.textContent='http://'+(sip.value||'—')+':'+(spt.value||'8080');sstat.innerHTML='';}
+function setSrv(ip,p){sip.value=ip;spt.value=p;updUrl();}
+function testConn(){
+  sstat.innerHTML='<span class="chip neutral">Probando…</span>';
+  setTimeout(()=>{sstat.innerHTML=sip.value.startsWith('192.168')?'<span class="chip good">● Conectado · 38 ms</span>':'<span class="chip bad">No fue posible conectar: timeout</span>';},800);
+}
+function saveAccount(){
+  const e=[];
+  if(!/^\S+@\S+\.\S+$/.test(aM.value))e.push('Escribe un correo válido');
+  if(aP1.value&&aP1.value.length<6)e.push('La contraseña debe tener al menos 6 caracteres');
+  if(aP1.value!==aP2.value)e.push('Las contraseñas no coinciden');
+  aErr.hidden=!e.length;aErr.textContent=e.join(' · ');
+  if(!e.length){aP1.value=aP2.value='';toast('Cuenta actualizada');}
+}
+
+/* ---------- inventarios ---------- */
+function renderInv(){
+  invList.innerHTML=INVS.map(i=>`<div class="li tap" onclick="openInv(${i.id})">
+    <div class="grow"><div class="t">${i.size} <span class="muted" style="font-weight:400">#${i.id}</span></div><div class="s"><span class="chip ${ST_CHIP[i.st]}" style="height:20px;font-size:11px">${i.st}</span></div></div>
+    <div class="muted" style="font-size:13px">${i.date}</div>
+    <button class="act" aria-label="Más opciones" onclick="invMenu(event,${i.id})">${ICON.more}</button></div>`).join('');
+}
+function openInv(id){
+  const i=INVS.find(x=>x.id===id);
+  if(i.st==='Bloqueado')return dlg('Inventario bloqueado',`El inventario #${id} no se puede abrir porque se está utilizando en este momento.`,'Entendido');
+  if(i.st==='Cerrado')return dlg('Inventario cerrado',`El inventario #${id} está cerrado. ¿Deseas abrirlo nuevamente?`,'Abrir de nuevo',()=>{i.st='Abierto';renderInv();toast('Inventario reabierto');});
+  if(id!==52)return dlg('Maqueta','En esta demostración solo el inventario #52 (Galones) tiene conteos de ejemplo.','Ir al #52',()=>go('count'));
+  go('count');
+}
+function invMenu(ev,id){
+  const i=INVS.find(x=>x.id===id);
+  openMenu(ev,[
+    {l:'Conteo guiado',ic:'play',fn:()=>dlg('Conteo guiado','Recorre el stock del inventario producto por producto. (No incluido en esta maqueta)','Entendido')},
+    {l:'Cerrar inventario',ic:'lock',fn:()=>dlg('Cerrar inventario',`¿Seguro que quieres cerrar el inventario #${id}? Ya no se podrán registrar más conteos en él.`,'Cerrar',()=>{i.st='Cerrado';renderInv();toast('Inventario cerrado');})},
+    {l:'Eliminar',ic:'trash',del:1,fn:()=>dlg('Eliminar inventario',`¿Seguro que quieres eliminar el inventario #${id}? Esta acción no se puede deshacer.`,'Eliminar',()=>{INVS.splice(INVS.indexOf(i),1);renderInv();toast('Inventario eliminado');},1)},
+  ]);
+}
+function pickCsv(){dropT.textContent='existencias_galones_26sep.csv';dropM.textContent='48 KB · toca para cambiar';drop.style.borderColor='var(--primary)';upBtn.disabled=false;upRes.innerHTML='';}
+function doUpload(){
+  upBtn.disabled=true;upBtn.textContent='Procesando…';
+  setTimeout(()=>{upBtn.textContent='Procesar y crear inventario';
+    upRes.innerHTML=`<div class="card" style="padding:16px;border-color:var(--success)"><div style="display:flex;gap:8px;align-items:center;color:var(--success);font-weight:600;font-size:16px">${ICON.check} Inventario #53 creado</div><p class="muted" style="font-size:14px;line-height:1.6;margin-top:8px">Presentación 4 LTS<br>312 filas procesadas · 4 productos nuevos<br>308 registros de stock</p></div>`;
+    upRes.querySelector('svg').style.cssText='width:20px;height:20px';
+  },1000);
+}
+
+/* ---------- conteo ---------- */
+function seg(b){b.parentNode.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));}
+function lookup(){
+  const p=byId(cCode.value.trim()),st=STOCK52[cCode.value.trim()];
+  fCode.classList.remove('err');cErr.hidden=true;
+  if(p&&st!==undefined){cStock.textContent=fmt(st);cStock.style.color='var(--on-surface)';cDesc.innerHTML=`<span class="chip primary">${p.d}</span>`;}
+  else if(cCode.value.trim().length>=5){cStock.textContent='—';cDesc.innerHTML='<span class="chip warn">El código no se encuentra registrado</span>';}
+  else{cStock.textContent='—';cStock.style.color='';cDesc.innerHTML='';}
+  diff();
+}
+function counted(id){return counts.filter(c=>c.id===id).reduce((a,c)=>a+c.q,0);}
+function diff(){
+  const id=cCode.value.trim(),st=STOCK52[id],q=parseFloat(cQty.value);
+  if(st===undefined||isNaN(q)){cDiff.textContent='—';cDiff.className='val';return;}
+  const d=counted(id)+q-st;cDiff.textContent=sgn(d);cDiff.className='val '+cls(d);cDiff.style.fontWeight='600';
+}
+function addCount(){
+  const id=cCode.value.trim(),q=parseFloat(cQty.value);
+  let e='';
+  if(!id)e='Escribe el código del producto';else if(STOCK52[id]===undefined)e='Este código no está registrado en el inventario';
+  else if(isNaN(q))e='Escribe la cantidad contada';else if(q<=0)e='La cantidad debe ser mayor a 0';
+  cErr.hidden=!e;cErr.textContent=e;
+  fCode.classList.toggle('err',/código/.test(e));fQty.classList.toggle('err',/cantidad/i.test(e));
+  if(e)return;
+  cAdd.disabled=true;cAdd.innerHTML='Agregando…';
+  setTimeout(()=>{
+    counts.push({n:nextN++,id,q,place:cPlace.value,fresh:1});
+    cAdd.disabled=false;cAdd.innerHTML=ICON.plus+' Agregar';
+    clearCount();renderCounts();syncHome();toast('Producto agregado al conteo');
+  },450);
+}
+function clearCount(){cCode.value=cQty.value='';cErr.hidden=true;fCode.classList.remove('err');fQty.classList.remove('err');lookup();}
+function renderCounts(){
+  const q=cFilter.value.trim().toLowerCase();
+  const rows=counts.slice().reverse().filter(c=>!q||c.id.includes(q)||byId(c.id).d.toLowerCase().includes(q));
+  cFound.textContent=q?(rows.length===1?'1 registro encontrado':rows.length+' registros encontrados'):counts.length+' conteos registrados';
+  cList.innerHTML=rows.length?rows.map(c=>`<div class="li${c.fresh?' new-flash':''}">
+    <div class="mono" style="width:64px;font-size:14px">${c.id}</div>
+    <div class="grow"><div class="s" style="margin:0;color:var(--on-surface)">${byId(c.id).d}</div><div class="s">${c.place}</div></div>
+    <div class="num" style="width:62px;font-size:15px;font-weight:500">${fmt(c.q)}</div>
+    <button class="act" aria-label="Más opciones" onclick="countMenu(event,${c.n})">${ICON.more}</button></div>`).join('')
+    :`<div class="empty">${q?'Ningún conteo coincide con la búsqueda':'Todavía no hay conteos registrados'}</div>`;
+  counts.forEach(c=>delete c.fresh);
+}
+function countMenu(ev,n){
+  const c=counts.find(x=>x.n===n);
+  openMenu(ev,[
+    {l:'Editar cantidad',ic:'edit',fn:()=>{counts.splice(counts.indexOf(c),1);cCode.value=c.id;cQty.value=c.q;cPlace.value=c.place;lookup();renderCounts();app.querySelector('#count .body').scrollTo({top:0,behavior:'smooth'});cQty.focus();}},
+    {l:'Eliminar',ic:'trash',del:1,fn:()=>dlg('Eliminar conteo',`¿Seguro que quieres eliminar el conteo de ${c.id} (${fmt(c.q)})? Esta acción no se puede deshacer.`,'Eliminar',()=>{counts.splice(counts.indexOf(c),1);renderCounts();syncHome();toast('Conteo eliminado');},1)},
+  ]);
+}
+function syncHome(){kpiCounts.textContent=homeCnt.textContent=counts.length;}
+function scan(){scanEl.classList.add('show');scanTimer=setTimeout(scanDone,1800);}
+const scanEl=document.getElementById('scan');let scanTimer;
+function scanDone(){clearTimeout(scanTimer);if(!scanEl.classList.contains('show'))return;scanEl.classList.remove('show');cCode.value='10811';lookup();cQty.focus();toast('Código leído: 10811');resetSeg();}
+function closeScan(){clearTimeout(scanTimer);scanEl.classList.remove('show');resetSeg();}
+function resetSeg(){seg(app.querySelector('#count .seg button'));}
+
+/* ---------- buscador de producto ---------- */
+function renderPicker(){
+  const q=pQ.value.trim().toLowerCase();
+  const rows=PRODUCTS.filter(p=>p.p==='4 LTS'&&(!q||p.d.toLowerCase().includes(q)));
+  pList.innerHTML=rows.length?rows.map(p=>`<div class="li tap" onclick="pick('${p.id}')"><div class="grow"><div class="t" style="font-size:14px">${p.d}</div><div class="s mono">${p.id} · stock ${fmt(STOCK52[p.id])}</div></div><span class="muted">${ICON.chev}</span></div>`).join(''):'<div class="empty">Sin coincidencias</div>';
+  pList.querySelectorAll('.muted svg').forEach(s=>s.style.cssText='width:20px;height:20px');
+}
+function pick(id){back();cCode.value=id;lookup();cQty.focus();}
+
+/* ---------- resumen ---------- */
+let sumF='all';
+function renderSummary(){
+  const ids=Object.keys(STOCK52);
+  const rows=ids.map(id=>({id,st:STOCK52[id],c:counted(id)})).map(r=>({...r,d:r.c-r.st}));
+  const withD=rows.filter(r=>r.d!==0);
+  sKpi.innerHTML=`<div class="kpi"><b>${rows.filter(r=>r.c>0).length}/${rows.length}</b><span>Contados</span></div><div class="kpi"><b class="pos">${sgn(withD.filter(r=>r.d>0).reduce((a,r)=>a+r.d,0)).replace(/\.000$/,'')}</b><span>Sobrante</span></div><div class="kpi"><b class="neg">${sgn(withD.filter(r=>r.d<0).reduce((a,r)=>a+r.d,0)).replace(/\.000$/,'')}</b><span>Faltante</span></div>`;
+  sBody.innerHTML=(sumF==='diff'?withD:rows).map(r=>`<tr><td><span class="mono">${r.id}</span><small>${byId(r.id).d}</small></td><td class="num">${fmt(r.st)}</td><td class="num">${fmt(r.c)}</td><td class="num ${cls(r.d)}" style="font-weight:600">${sgn(r.d)}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">Sin diferencias</td></tr>';
+}
+function exportPdf(b){
+  const t=b.innerHTML;b.disabled=true;b.textContent='Generando PDF…';
+  setTimeout(()=>{b.disabled=false;b.innerHTML=t;REPORTS.unshift({date:'26 sep 2026',time:'09:41',pres:'4 LTS',inv:52,fresh:1});toast('Reporte_Inv52_26sep2026.pdf descargado');},900);
+}
+
+/* ---------- reportes / productos / stock ---------- */
+function renderReports(){
+  rList.innerHTML=REPORTS.map(r=>`<div class="li tap${r.fresh?' new-flash':''}" onclick="toast('Descargando reporte del inventario #${r.inv}…')"><div class="grow"><div class="t">${r.date}</div><div class="s">${r.time} · Inventario #${r.inv}</div></div><div style="width:110px"><span class="chip primary">${r.pres}</span></div><button class="act" aria-label="Descargar PDF" style="color:var(--primary)">${ICON.download}</button></div>`).join('');
+  REPORTS.forEach(r=>delete r.fresh);
+}
+function renderProducts(){
+  const q=prQ.value.trim().toLowerCase();
+  const rows=PRODUCTS.filter(p=>!q||p.id.includes(q)||p.d.toLowerCase().includes(q));
+  prCount.textContent=q?rows.length+' resultados':'1.284 productos';
+  prList.innerHTML=rows.length?rows.map(p=>`<div class="li"><div class="mono" style="width:64px;font-size:14px">${p.id}</div><div class="grow"><div class="t" style="font-size:14px">${p.d}</div></div><span class="chip neutral">${p.p}</span></div>`).join(''):'<div class="empty">Ningún producto coincide</div>';
+}
+function renderStock(){
+  stList.innerHTML=PRES.map(p=>`<button class="card pres" onclick="openType('${p.k}')"><div class="ic" style="background:${p.bg};color:${p.fg}">${ICON[p.ic]}</div><div><b>${p.k}</b><span>${p.s} · ${p.n} inventarios</span></div><span class="chev">${ICON.chev}</span></button>`).join('');
+  stList.querySelectorAll('.chev svg').forEach(s=>s.style.cssText='width:22px;height:22px');
+}
+let curType='Galones';
+function openType(k){curType=k;go('stockType');}
+function renderType(){
+  const p=PRES.find(x=>x.k===curType);stTitle.textContent=p.k;stSub.textContent=p.s;
+  const list=INVS.filter(i=>i.pres===curType);
+  stInv.innerHTML=list.length?list.map(i=>`<div class="li tap" onclick="ssInv=${i.id};go('stockSum')"><div class="grow"><div class="t">Inventario #${i.id}</div><div class="s">${i.date}</div></div><span class="chip ${ST_CHIP[i.st]}">${i.st}</span><span class="muted" style="display:grid;width:32px;place-items:center">${ICON.chev}</span></div>`).join(''):'<div class="empty">No hay inventarios de este tipo</div>';
+  stInv.querySelectorAll('.muted svg').forEach(s=>s.style.cssText='width:20px;height:20px');
+}
+let ssInv=52;
+function renderStockSum(){
+  const i=INVS.find(x=>x.id===ssInv)||INVS[0];ssSub.textContent=i.pres+' · #'+i.id;
+  const q=ssQ.value.trim().toLowerCase();
+  const src=PRODUCTS.filter(p=>p.p===i.size).map((p,k)=>({...p,st:STOCK52[p.id]??(k*3+4)}));
+  const rows=src.filter(p=>!q||p.d.toLowerCase().includes(q));
+  ssList.innerHTML=rows.length?rows.map(p=>`<div class="li"><div class="grow"><div class="t" style="font-size:14px">${p.d}</div><div class="s mono">${p.id}</div></div><div class="num" style="font-size:15px;font-weight:500;padding-right:8px">${fmt(p.st)}</div></div>`).join(''):'<div class="empty">Ningún producto coincide</div>';
+}
+
+const RENDER={inventories:renderInv,count:()=>{renderCounts();lookup();},picker:renderPicker,summary:renderSummary,reports:renderReports,products:renderProducts,stock:renderStock,stockType:renderType,stockSum:renderStockSum,home:syncHome};
+function fit(){const p=document.querySelector('.phone');p.style.zoom=innerWidth>760?Math.min(1,(innerHeight-32)/800):1;}
+addEventListener('resize',fit);fit();
+go('login',true);
+</script>
+</body>
+</html>

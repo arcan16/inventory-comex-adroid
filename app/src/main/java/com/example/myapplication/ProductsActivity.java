@@ -238,7 +238,7 @@ public class ProductsActivity extends BaseActivity implements ProductAdapter.OnP
     /**
      * Toca un renglon del catalogo: como un producto puede tener varias
      * presentaciones (cada una con su codigo de barras), primero se muestran
-     * las registradas (GET /products/{id}/presentations) para elegir cual editar.
+     * las registradas (GET /products/presentations?productId=) para elegir cual editar.
      */
     @Override
     public void onProductClick(ProductDTO product) {
@@ -325,9 +325,9 @@ public class ProductsActivity extends BaseActivity implements ProductAdapter.OnP
     /**
      * Dialogo Editar producto. Con presentacion muestra id, presentacion,
      * codigo de barras y descripcion tal como estan en la base de datos, y
-     * guarda con PUT /products/{id}/presentations/{presentationId}. Sin
+     * guarda con PUT /products/presentations/{presentationId}?productId=. Sin
      * presentacion (producto sin ninguna registrada) solo permite editar la
-     * descripcion con PUT /products/{id}.
+     * descripcion con PUT /products?productId=.
      */
     private void showEditProductDialog(ProductDTO product, @Nullable ProductPresentationDTO presentation) {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_edit_product, null);
@@ -406,7 +406,7 @@ public class ProductsActivity extends BaseActivity implements ProductAdapter.OnP
                     serverPreferences.getBaseUrl(), sessionPreferences.getToken());
             if (presentation != null) {
                 String barcode = etBarcode.getText().toString().trim();
-                saveEdit(api.updatePresentation(product.getId(), presentation.getId(),
+                saveEdit(api.updatePresentation(presentation.getId(), product.getId(),
                         new UpdateProductPresentationRequest(description, barcode,
                                 barcode.isEmpty() && clearBarcodeRequested[0])), dialog);
             } else {

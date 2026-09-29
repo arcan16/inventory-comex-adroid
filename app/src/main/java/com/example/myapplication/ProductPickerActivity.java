@@ -7,11 +7,14 @@ import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,6 +49,11 @@ public class ProductPickerActivity extends BaseActivity implements ProductAdapte
 
     public static final String EXTRA_PRODUCT_ID = "extra_product_id";
     public static final String EXTRA_PRODUCT_DESCRIPTION = "extra_product_description";
+    /**
+     * Entrada opcional: abre con el cursor en el buscador y el teclado numerico
+     * visible (asignar un codigo de barras desde el conteo, donde se busca por id).
+     */
+    public static final String EXTRA_FOCUS_NUMERIC_SEARCH = "extra_focus_numeric_search";
 
     private static final int PAGE_SIZE = 20;
     /** Cuantos renglones antes del final se dispara la siguiente pagina. */
@@ -140,6 +148,20 @@ public class ProductPickerActivity extends BaseActivity implements ProductAdapte
             }
             return false;
         });
+
+        if (getIntent().getBooleanExtra(EXTRA_FOCUS_NUMERIC_SEARCH, false)) {
+            etSearch.setInputType(InputType.TYPE_CLASS_NUMBER);
+            etSearch.requestFocus();
+            // Al iniciar la Activity la ventana aun no tiene foco y showSoftInput() puede
+            // ignorarse; el modo de la ventana garantiza que el teclado se abra.
+            getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+            etSearch.post(() -> {
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.showSoftInput(etSearch, InputMethodManager.SHOW_IMPLICIT);
+                }
+            });
+        }
 
         fetchPage(0, false);
     }

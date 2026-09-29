@@ -1,7 +1,7 @@
 package com.example.myapplication.network;
 
 /**
- * Cuerpo de PUT /products/{id} (UpdateProductDTO en el backend): solo la
+ * Cuerpo de PUT /products?productId= (UpdateProductDTO en el backend): solo la
  * descripcion. Los codigos de barras se editan por presentacion con
  * UpdateProductPresentationRequest.
  */

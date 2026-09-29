@@ -25,9 +25,11 @@ public interface ProductCountsApi {
     @DELETE("productCounts/{id}")
     Call<Void> deleteProductCount(@Path("id") long id);
 
+    /** onlyDifferences=true devuelve solo los productos cuyo conteo no coincide con el stock. */
     @GET("productCounts/summary/{idInventory}")
     Call<PageResponse<CountsDifferenceDTO>> getSummary(
-            @Path("idInventory") long idInventory, @Query("page") int page, @Query("size") int size);
+            @Path("idInventory") long idInventory, @Query("page") int page, @Query("size") int size,
+            @Query("onlyDifferences") boolean onlyDifferences);
 
     @Streaming
     @GET("productCounts/report/{idInventory}")

@@ -24,6 +24,7 @@ import com.example.myapplication.network.ProductCountsApi;
 import com.example.myapplication.util.DateFormatUtils;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.tabs.TabLayout;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -58,6 +59,11 @@ public class CountSummaryActivity extends BaseActivity {
     private int currentPage = 0;
     private int totalPages = 1;
     private boolean isLoadingPage;
+    /** Pestaña Diferencias: solo productos cuyo conteo no coincide con el stock. */
+    private boolean onlyDifferences;
+    /** Descarta respuestas de la pestaña anterior si el usuario cambia de pestaña mientras carga. */
+    private int requestGeneration;
+    private TabLayout tabsSummary;
 
     private View contentContainer;
     private View progressLoad;
@@ -115,6 +121,27 @@ public class CountSummaryActivity extends BaseActivity {
             }
         });
 
+        tabsSummary = findViewById(R.id.tabsSummary);
+        tabsSummary.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                onlyDifferences = tab.getPosition() == 1;
+                adapter.setItems(Collections.emptyList());
+                currentPage = 0;
+                totalPages = 1;
+                loadSummary();
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+                recyclerSummary.scrollToPosition(0);
+            }
+        });
+
         findViewById(R.id.btnRetryLoad).setOnClickListener(v -> loadSummary());
         btnExport.setOnClickListener(v -> exportPdf());
 
@@ -148,6 +175,8 @@ public class CountSummaryActivity extends BaseActivity {
     }
 
     private void fetchPage(int page, boolean appending) {
+        int generation = ++requestGeneration;
+        boolean differencesTab = onlyDifferences;
         isLoadingPage = true;
         if (appending) {
             progressLoadMore.setVisibility(View.VISIBLE);
@@ -160,10 +189,13 @@ public class CountSummaryActivity extends BaseActivity {
         ProductCountsApi api = ApiClient.createProductCountsApi(
                 serverPreferences.getBaseUrl(), sessionPreferences.getToken());
 
-        api.getSummary(inventoryId, page, PAGE_SIZE).enqueue(new Callback<PageResponse<CountsDifferenceDTO>>() {
+        api.getSummary(inventoryId, page, PAGE_SIZE, differencesTab).enqueue(new Callback<PageResponse<CountsDifferenceDTO>>() {
             @Override
             public void onResponse(@NonNull Call<PageResponse<CountsDifferenceDTO>> call,
                                     @NonNull Response<PageResponse<CountsDifferenceDTO>> response) {
+                if (generation != requestGeneration) {
+                    return;
+                }
                 isLoadingPage = false;
                 progressLoad.setVisibility(View.GONE);
                 progressLoadMore.setVisibility(View.GONE);
@@ -180,13 +212,20 @@ public class CountSummaryActivity extends BaseActivity {
                         adapter.addItems(response.body().getContent());
                     } else {
                         adapter.setItems(response.body().getContent());
+                        recyclerSummary.scrollToPosition(0);
+                        if (differencesTab) {
+                            setDifferencesTabCount(response.body().getTotalElements());
+                        }
                     }
+                    tvSummaryEmpty.setText(differencesTab
+                            ? R.string.count_summary_no_differences : R.string.count_summary_empty);
                     tvSummaryEmpty.setVisibility(adapter.isEmpty() ? View.VISIBLE : View.GONE);
                     contentContainer.setVisibility(View.VISIBLE);
                 } else if (!appending && response.code() == 400) {
                     // El backend responde 400 cuando el inventario todavia no tiene stock ni conteos.
                     adapter.setItems(Collections.emptyList());
                     totalPages = 0;
+                    tvSummaryEmpty.setText(R.string.count_summary_empty);
                     tvSummaryEmpty.setVisibility(View.VISIBLE);
                     contentContainer.setVisibility(View.VISIBLE);
                 } else if (!appending) {
@@ -198,6 +237,9 @@ public class CountSummaryActivity extends BaseActivity {
 
             @Override
             public void onFailure(@NonNull Call<PageResponse<CountsDifferenceDTO>> call, @NonNull Throwable t) {
+                if (generation != requestGeneration) {
+                    return;
+                }
                 isLoadingPage = false;
                 progressLoad.setVisibility(View.GONE);
                 progressLoadMore.setVisibility(View.GONE);
@@ -208,6 +250,14 @@ public class CountSummaryActivity extends BaseActivity {
                 }
             }
         });
+    }
+
+    /** "Diferencias (12)": cuantos productos no coinciden con el stock. */
+    private void setDifferencesTabCount(long count) {
+        TabLayout.Tab tab = tabsSummary.getTabAt(1);
+        if (tab != null) {
+            tab.setText(getString(R.string.count_summary_tab_differences_count, (int) count));
+        }
     }
 
     private void showError(String message) {

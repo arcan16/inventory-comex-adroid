@@ -39,6 +39,7 @@ import com.example.myapplication.network.AssignBarcodeRequest;
 import com.example.myapplication.network.CreateProductCountRequest;
 import com.example.myapplication.network.CreateProductCountResultDTO;
 import com.example.myapplication.network.InventoriesApi;
+import com.example.myapplication.network.InventoryDTO;
 import com.example.myapplication.network.NewProductCountRequest;
 import com.example.myapplication.network.NormalInventoryDataDTO;
 import com.example.myapplication.network.ProductCountCreatedDTO;
@@ -54,6 +55,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.google.android.material.color.MaterialColors;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,7 +76,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
 
     /** Debe coincidir en orden con R.array.product_location_labels y con el enum ProductLocation del backend. */
     private static final String[] PLACE_API_VALUES = {"SALES_AREA", "WAREHOUSE", "STORAGE_AREA", "NOTE"};
-    private static final int PLACE_DEFAULT_INDEX = 1; // WAREHOUSE / "Almacén"
+    private static final int PLACE_DEFAULT_INDEX = 0; // SALES_AREA / "Piso de venta"
 
     private final ActivityResultLauncher<Intent> productPicker =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::onProductPicked);
@@ -116,6 +118,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     private MaterialButtonToggleGroup toggleGroup;
     private TextView tvCodeLabel;
     private ImageView btnScanBarcode;
+    private FloatingActionButton fabScanBarcode;
     private TextView tvBarcodeInfo;
     private View barcodeMismatchContainer;
     private TextView tvBarcodeMismatch;
@@ -161,6 +164,18 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> finish());
         toolbar.setSubtitle(presentation + " · " + DateFormatUtils.toShortSpanishDate(dateIso));
+        if (toolbar.getOverflowIcon() != null) {
+            // El icono de 3 puntos toma colorControlNormal (oscuro); sobre la barra azul va en blanco.
+            toolbar.getOverflowIcon().setTint(
+                    MaterialColors.getColor(toolbar, com.google.android.material.R.attr.colorOnPrimary));
+        }
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_finish_count) {
+                confirmFinishCount(presentation);
+                return true;
+            }
+            return false;
+        });
 
         contentScroll = findViewById(R.id.contentScroll);
         progressLoad = findViewById(R.id.progressLoad);
@@ -183,6 +198,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         toggleGroup = findViewById(R.id.toggleGroup);
         tvCodeLabel = findViewById(R.id.tvCodeLabel);
         btnScanBarcode = findViewById(R.id.btnScanBarcode);
+        fabScanBarcode = findViewById(R.id.fabScanBarcode);
         tvBarcodeInfo = findViewById(R.id.tvBarcodeInfo);
         barcodeMismatchContainer = findViewById(R.id.barcodeMismatchContainer);
         tvBarcodeMismatch = findViewById(R.id.tvBarcodeMismatch);
@@ -237,6 +253,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         });
 
         btnScanBarcode.setOnClickListener(v -> barcodeScan.toggle());
+        fabScanBarcode.setOnClickListener(v -> barcodeScan.toggle());
         findViewById(R.id.btnBarcodeDiscard).setOnClickListener(v -> discardBarcodeReading());
         findViewById(R.id.btnBarcodeUnknownDiscard).setOnClickListener(v -> discardBarcodeReading());
         btnBarcodeUseAnyway.setOnClickListener(v -> {
@@ -249,7 +266,8 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
                 return;
             }
             barcodeToAssign = pendingBarcode;
-            productPicker.launch(new Intent(this, ProductPickerActivity.class));
+            productPicker.launch(new Intent(this, ProductPickerActivity.class)
+                    .putExtra(ProductPickerActivity.EXTRA_FOCUS_NUMERIC_SEARCH, true));
         });
 
         // En modo Barras, editar el codigo invalida la lectura anterior (el id resuelto y los avisos).
@@ -440,6 +458,51 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         }
     }
 
+    private void confirmFinishCount(String presentation) {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.count_finish_confirm_title)
+                .setMessage(getString(R.string.count_finish_confirm_message, presentation))
+                .setPositiveButton(R.string.count_finish_confirm_action, (dialog, which) -> finishCount())
+                .setNegativeButton(R.string.action_cancel, null)
+                .show();
+    }
+
+    /**
+     * Finalizar conteo = cerrar el inventario (PUT /inventories/{id}/close, el
+     * mismo "Cerrar inventario" de la lista). Al terminar regresa a la lista
+     * con RESULT_OK para que se recargue y muestre el inventario como cerrado.
+     */
+    private void finishCount() {
+        barcodeScan.stop();
+        InventoriesApi api = ApiClient.createInventoriesApi(
+                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+        api.closeInventory(inventoryId).enqueue(new Callback<InventoryDTO>() {
+            @Override
+            public void onResponse(@NonNull Call<InventoryDTO> call, @NonNull Response<InventoryDTO> response) {
+                if (response.code() == 401) {
+                    handleSessionExpired();
+                    return;
+                }
+                if (response.isSuccessful()) {
+                    Toast.makeText(CountNormalActivity.this, R.string.count_finish_success, Toast.LENGTH_SHORT).show();
+                    setResult(Activity.RESULT_OK);
+                    finish();
+                } else {
+                    Toast.makeText(CountNormalActivity.this,
+                            getString(R.string.count_finish_error, ApiErrorUtils.parseErrorMessage(response)),
+                            Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<InventoryDTO> call, @NonNull Throwable t) {
+                String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+                Toast.makeText(CountNormalActivity.this,
+                        getString(R.string.count_finish_error, reason), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     private void openSummary(String presentation, String dateIso) {
         Intent intent = new Intent(this, CountSummaryActivity.class);
         intent.putExtra(CountSummaryActivity.EXTRA_INVENTORY_ID, inventoryId);
@@ -627,7 +690,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     }
 
     /**
-     * POST /products/{id}/presentations/barcode con la presentacion del
+     * POST /products/presentations/barcode?productId= con la presentacion del
      * inventario: crea la presentacion si el producto no la tiene. Al terminar
      * el conteo continua con ese producto.
      */
@@ -687,17 +750,18 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         pendingBarcodePresentation = null;
     }
 
-    /** Mientras la camara lee, el hint del campo lo indica y el icono cambia de color. */
+    /** Mientras la camara lee, el hint del campo lo indica y los iconos de escaneo cambian de color. */
     private void updateScanUi(boolean scanning) {
         if (scanning) {
             etCode.setHint(R.string.count_barcode_scanning_hint);
         } else {
             etCode.setHint(barcodeMode ? getString(R.string.count_barcode_hint) : null);
         }
-        int color = scanning
-                ? ContextCompat.getColor(this, R.color.md_theme_error)
-                : MaterialColors.getColor(btnScanBarcode, androidx.appcompat.R.attr.colorPrimary);
-        ImageViewCompat.setImageTintList(btnScanBarcode, ColorStateList.valueOf(color));
+        int errorColor = ContextCompat.getColor(this, R.color.md_theme_error);
+        int primaryColor = MaterialColors.getColor(btnScanBarcode, androidx.appcompat.R.attr.colorPrimary);
+        ImageViewCompat.setImageTintList(btnScanBarcode,
+                ColorStateList.valueOf(scanning ? errorColor : primaryColor));
+        fabScanBarcode.setBackgroundTintList(ColorStateList.valueOf(scanning ? errorColor : primaryColor));
     }
 
     /** Compara presentaciones ignorando mayusculas y espacios ("4 lts" == "4 LTS"). */

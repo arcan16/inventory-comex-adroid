@@ -14,6 +14,7 @@
         android:layout_height="?attr/actionBarSize"
         app:navigationIcon="@drawable/ic_back"
         app:navigationIconTint="?attr/colorOnPrimary"
+        app:menu="@menu/count_normal_menu"
         app:title="@string/count_normal_title" />
 
     <FrameLayout
@@ -438,5 +439,18 @@
                 android:layout_marginTop="14dp"
                 android:text="@string/inventories_retry" />
         </LinearLayout>
+
+        <!-- Acceso rapido al escaneo de codigo de barras; hace lo mismo que btnScanBarcode
+             (junto al campo Codigo), solo que siempre visible sin tener que hacer scroll. -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabScanBarcode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="20dp"
+            android:src="@drawable/ic_barcode"
+            app:tint="?attr/colorOnPrimary"
+            app:backgroundTint="?attr/colorPrimary"
+            android:contentDescription="@string/product_barcode_scan_action" />
     </FrameLayout>
 </LinearLayout>

@@ -15,6 +15,31 @@
         app:navigationIconTint="?attr/colorOnPrimary"
         app:title="@string/count_summary_title" />
 
+    <!-- Conteo total: todo el resumen. Diferencias: solo productos con diferencia distinta de cero. -->
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabsSummary"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorPrimary"
+        app:tabGravity="fill"
+        app:tabMode="fixed"
+        app:tabIndicatorColor="?attr/colorOnPrimary"
+        app:tabIndicatorFullWidth="true"
+        app:tabTextColor="#CCFFFFFF"
+        app:tabSelectedTextColor="?attr/colorOnPrimary"
+        app:tabRippleColor="#33FFFFFF">
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/count_summary_tab_total" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/count_summary_tab_differences" />
+    </com.google.android.material.tabs.TabLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"

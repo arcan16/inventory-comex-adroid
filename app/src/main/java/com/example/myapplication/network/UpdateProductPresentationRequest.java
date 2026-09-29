@@ -1,7 +1,7 @@
 package com.example.myapplication.network;
 
 /**
- * Cuerpo de PUT /products/{id}/presentations/{presentationId}
+ * Cuerpo de PUT /products/presentations/{presentationId}?productId=
  * (UpdateProductPresentationDTO en el backend): actualiza la descripcion del
  * producto y el codigo de barras de esa presentacion. Un barcode vacio conserva
  * el codigo guardado, salvo que clearBarcode sea true (boton "Quitar codigo").

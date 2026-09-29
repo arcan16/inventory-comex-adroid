@@ -53,7 +53,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ViewHold
         return items.isEmpty();
     }
 
-    /** Reemplaza en su lugar el producto con el mismo id (tras editarlo con PUT /products/{id}). */
+    /** Reemplaza en su lugar el producto con el mismo id (tras editarlo con PUT /products?productId=). */
     public void updateItem(ProductDTO updated) {
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).getId().equals(updated.getId())) {
