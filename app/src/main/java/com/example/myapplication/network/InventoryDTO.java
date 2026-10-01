@@ -11,6 +11,7 @@ public class InventoryDTO {
     private String presentation;
     private String status;
     private String lockedByUsername;
+    private String lockedDevice;
 
     public long getId() {
         return id;
@@ -32,5 +33,10 @@ public class InventoryDTO {
     /** Usuario que lo esta usando cuando status es LOCKED; null si nadie. */
     public String getLockedByUsername() {
         return lockedByUsername;
+    }
+
+    /** Dispositivo que lo tiene bloqueado (ver DevicePreferences); null si nadie o backend anterior. */
+    public String getLockedDevice() {
+        return lockedDevice;
     }
 }

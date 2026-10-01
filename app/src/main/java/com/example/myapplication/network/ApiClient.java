@@ -21,6 +21,8 @@ public final class ApiClient {
     private static final long DEFAULT_TIMEOUT_SECONDS = 8;
     /** Subir el CSV puede tardar mas en una red local lenta. */
     private static final long UPLOAD_TIMEOUT_SECONDS = 30;
+    /** Un respaldo completo (todos los inventarios) puede pesar varios MB. */
+    private static final long BACKUP_TIMEOUT_SECONDS = 120;
 
     private ApiClient() {
     }
@@ -56,6 +58,10 @@ public final class ApiClient {
 
     public static UsersApi createUsersApi(String baseUrl, String token) {
         return create(baseUrl, UsersApi.class, token, DEFAULT_TIMEOUT_SECONDS);
+    }
+
+    public static DataApi createDataApi(String baseUrl, String token) {
+        return create(baseUrl, DataApi.class, token, BACKUP_TIMEOUT_SECONDS);
     }
 
     private static <T> T create(String baseUrl, Class<T> service, String token, long timeoutSeconds) {

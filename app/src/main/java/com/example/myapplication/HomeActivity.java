@@ -32,6 +32,8 @@ public class HomeActivity extends BaseActivity {
                 startActivity(new Intent(this, ProductsActivity.class)));
         findViewById(R.id.tileStock).setOnClickListener(v ->
                 startActivity(new Intent(this, StockActivity.class)));
+        findViewById(R.id.tileBackup).setOnClickListener(v ->
+                startActivity(new Intent(this, DataTransferActivity.class)));
 
         findViewById(R.id.btnAccount).setOnClickListener(v ->
                 startActivity(new Intent(this, AccountActivity.class)));

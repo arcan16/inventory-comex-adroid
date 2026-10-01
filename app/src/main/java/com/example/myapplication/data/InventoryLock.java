@@ -49,6 +49,8 @@ public class InventoryLock {
     private final long inventoryId;
     private final ServerPreferences serverPreferences;
     private final SessionPreferences sessionPreferences;
+    /** El bloqueo es por dispositivo: otro telefono no entra ni con el mismo usuario. */
+    private final String deviceId;
     private final Listener listener;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable heartbeat = this::acquire;
@@ -72,6 +74,7 @@ public class InventoryLock {
         this.inventoryId = inventoryId;
         this.serverPreferences = new ServerPreferences(activity);
         this.sessionPreferences = new SessionPreferences(activity);
+        this.deviceId = new DevicePreferences(activity).getDeviceId();
         this.listener = listener;
 
         // Si la app ya esta en primer plano, este observador recibe onStart de inmediato y toma el bloqueo.
@@ -106,7 +109,7 @@ public class InventoryLock {
         if (!active || inventoryId <= 0 || !sessionPreferences.isLoggedIn()) {
             return;
         }
-        api().lockInventory(inventoryId).enqueue(new Callback<InventoryDTO>() {
+        api().lockInventory(inventoryId, deviceId).enqueue(new Callback<InventoryDTO>() {
             @Override
             public void onResponse(@NonNull Call<InventoryDTO> call, @NonNull Response<InventoryDTO> response) {
                 if (!active) {
@@ -144,7 +147,7 @@ public class InventoryLock {
         if (inventoryId <= 0 || !sessionPreferences.isLoggedIn()) {
             return;
         }
-        api().unlockInventory(inventoryId).enqueue(new Callback<InventoryDTO>() {
+        api().unlockInventory(inventoryId, deviceId).enqueue(new Callback<InventoryDTO>() {
             @Override
             public void onResponse(@NonNull Call<InventoryDTO> call, @NonNull Response<InventoryDTO> response) {
                 // Nada que hacer: si falla, el backend lo libera solo por falta de renovacion.

@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.example.myapplication.adapter.InventoryAdapter;
+import com.example.myapplication.data.DevicePreferences;
 import com.example.myapplication.data.ServerPreferences;
 import com.example.myapplication.data.SessionPreferences;
 import com.example.myapplication.network.ApiClient;
@@ -223,13 +224,17 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
     }
 
     /**
-     * LOCKED = alguien esta dentro de su conteo (ver InventoryLock). Si es el
-     * propio usuario (p. ej. la app se cerro de golpe y el bloqueo aun no
-     * expira), se le deja entrar; el backend renueva su bloqueo.
+     * LOCKED = alguien esta dentro de su conteo (ver InventoryLock). Solo puede
+     * entrar el dispositivo que tiene el bloqueo (p. ej. si la app se cerro de
+     * golpe y el bloqueo aun no expira); ningun otro, aunque use el mismo usuario.
+     * Si el backend no envia el dispositivo (version anterior), se compara por usuario.
      */
     private boolean isLockedByOther(InventoryDTO inventory) {
         if (!"LOCKED".equals(inventory.getStatus())) {
             return false;
+        }
+        if (inventory.getLockedDevice() != null) {
+            return !inventory.getLockedDevice().equals(new DevicePreferences(this).getDeviceId());
         }
         String me = sessionPreferences.getUsername();
         return me == null || !me.equalsIgnoreCase(inventory.getLockedByUsername());
@@ -237,11 +242,18 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
 
     private void showLockedDialog(InventoryDTO inventory) {
         String holder = inventory.getLockedByUsername();
+        String me = sessionPreferences.getUsername();
+        String message;
+        if (holder == null) {
+            message = getString(R.string.inventories_locked_message, inventory.getPresentation());
+        } else if (holder.equalsIgnoreCase(me)) {
+            message = getString(R.string.inventories_locked_other_device_message, inventory.getPresentation());
+        } else {
+            message = getString(R.string.inventories_locked_by_message, inventory.getPresentation(), holder);
+        }
         new AlertDialog.Builder(this)
                 .setTitle(R.string.inventories_locked_title)
-                .setMessage(holder != null
-                        ? getString(R.string.inventories_locked_by_message, inventory.getPresentation(), holder)
-                        : getString(R.string.inventories_locked_message, inventory.getPresentation()))
+                .setMessage(message)
                 .setPositiveButton(R.string.action_accept, null)
                 .show();
     }

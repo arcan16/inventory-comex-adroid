@@ -5,6 +5,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.Header;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -26,13 +27,16 @@ public interface InventoriesApi {
     @PUT("inventories/{id}/reopen")
     Call<InventoryDTO> reopenInventory(@Path("id") long id);
 
-    /** Marca el inventario en uso (LOCKED) por esta sesion o renueva el bloqueo. 409 si lo usa otro usuario. */
+    /**
+     * Marca el inventario en uso (LOCKED) por este dispositivo o renueva el bloqueo.
+     * 409 si lo tiene otro dispositivo (aunque sea con el mismo usuario).
+     */
     @PUT("inventories/{id}/lock")
-    Call<InventoryDTO> lockInventory(@Path("id") long id);
+    Call<InventoryDTO> lockInventory(@Path("id") long id, @Header("X-Device-Id") String deviceId);
 
-    /** Lo regresa a OPENED si el bloqueo es de esta sesion. */
+    /** Lo regresa a OPENED si el bloqueo es de este dispositivo. */
     @PUT("inventories/{id}/unlock")
-    Call<InventoryDTO> unlockInventory(@Path("id") long id);
+    Call<InventoryDTO> unlockInventory(@Path("id") long id, @Header("X-Device-Id") String deviceId);
 
     @DELETE("inventories/{id}")
     Call<Void> deleteInventory(@Path("id") long id);

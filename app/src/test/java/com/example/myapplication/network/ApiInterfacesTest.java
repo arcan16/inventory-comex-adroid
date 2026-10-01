@@ -14,6 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiInterfacesTest {
 
     private static final Class<?>[] APIS = {
+            DataApi.class,
             HealthApi.class,
             LoginApi.class,
             InventoriesApi.class,

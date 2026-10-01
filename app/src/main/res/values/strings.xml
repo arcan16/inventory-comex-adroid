@@ -91,6 +91,7 @@
     <string name="inventories_reopen_error">No fue posible reabrir el inventario: %1$s</string>
     <string name="inventories_locked_title">Inventario bloqueado</string>
     <string name="inventories_locked_by_message">El inventario %1$s lo está usando %2$s en este momento. Se libera cuando sale del conteo.</string>
+    <string name="inventories_locked_other_device_message">El inventario %1$s está abierto en otro dispositivo con tu usuario. Se libera cuando sale del conteo en ese dispositivo.</string>
     <string name="count_locked_by_other_title">Inventario en uso</string>
     <string name="inventories_locked_message">El inventario %1$s no se puede abrir porque se está utilizando en este momento.</string>
     <string name="action_accept">Entendido</string>
@@ -326,4 +327,22 @@
     <string name="account_save_success">Cuenta actualizada</string>
     <string name="account_save_error">No fue posible guardar los cambios: %1$s</string>
     <string name="account_username_changed_message">Tu usuario cambió a \"%1$s\". Inicia sesión de nuevo para continuar.</string>
+
+    <!-- Respaldo de datos (exportar / importar) -->
+    <string name="home_tile_backup">Respaldo de datos</string>
+    <string name="home_tile_backup_desc">Exportar o importar todo</string>
+    <string name="backup_title">Respaldo de datos</string>
+    <string name="backup_export_title">Exportar</string>
+    <string name="backup_export_desc">Guarda en un archivo el catálogo, los códigos de barras y todos los inventarios con su stock y conteos. Sirve como respaldo y para pasar los datos a la otra app de inventarios.</string>
+    <string name="backup_export_action">Exportar respaldo</string>
+    <string name="backup_export_done">Respaldo guardado: %1$d productos, %2$d presentaciones y %3$d inventarios.</string>
+    <string name="backup_export_error">No se pudo exportar: %1$s</string>
+    <string name="backup_import_title">Importar</string>
+    <string name="backup_import_desc">Agrega los datos de un respaldo a los existentes sin borrar nada: los productos y códigos de barras se actualizan y los inventarios se agregan como nuevos.</string>
+    <string name="backup_import_action">Importar respaldo</string>
+    <string name="backup_import_confirm_title">¿Importar respaldo?</string>
+    <string name="backup_import_confirm_message">El archivo tiene %1$d productos, %2$d presentaciones y %3$d inventarios.\n\nLos inventarios se agregan como nuevos: importar dos veces el mismo archivo los duplica.</string>
+    <string name="backup_import_confirm_action">Importar</string>
+    <string name="backup_import_done">Importación terminada\n• Productos: %1$d nuevos, %2$d actualizados\n• Presentaciones nuevas: %3$d\n• Códigos de barras asignados: %4$d (en conflicto: %5$d)\n• Inventarios agregados: %6$d (stock: %7$d, conteos: %8$d)\n• Renglones omitidos: %9$d</string>
+    <string name="backup_import_error">No se pudo importar: %1$s</string>
 </resources>
