@@ -48,9 +48,6 @@ public class InventoryUploadActivity extends BaseActivity {
     private TextView tvFileMeta;
     private MaterialButton btnUpload;
     private View progressUpload;
-    private View resultCard;
-    private TextView tvResultTitle;
-    private TextView tvResultBody;
 
     private final ActivityResultLauncher<String> filePicker =
             registerForActivityResult(new ActivityResultContracts.GetContent(), this::onFilePicked);
@@ -70,9 +67,6 @@ public class InventoryUploadActivity extends BaseActivity {
         tvFileMeta = findViewById(R.id.tvFileMeta);
         btnUpload = findViewById(R.id.btnUpload);
         progressUpload = findViewById(R.id.progressUpload);
-        resultCard = findViewById(R.id.resultCard);
-        tvResultTitle = findViewById(R.id.tvResultTitle);
-        tvResultBody = findViewById(R.id.tvResultBody);
 
         findViewById(R.id.dropzone).setOnClickListener(v -> filePicker.launch("*/*"));
         btnUpload.setOnClickListener(v -> uploadSelectedFile());
@@ -102,7 +96,6 @@ public class InventoryUploadActivity extends BaseActivity {
         tvFileName.setText(name);
         tvFileMeta.setText(getString(R.string.upload_dropzone_selected_meta, FileUtils.formatFileSize(size)));
 
-        resultCard.setVisibility(View.GONE);
         btnUpload.setEnabled(true);
     }
 
@@ -174,19 +167,16 @@ public class InventoryUploadActivity extends BaseActivity {
         }
 
         if (response.isSuccessful() && response.body() != null) {
+            // Regresa a la lista de inventarios (que se recarga con RESULT_OK) mostrando el
+            // resumen de la carga. Salir tambien evita volver a subir el mismo archivo por accidente.
             InventoryUploadResultDTO result = response.body();
-            tvResultTitle.setText(getString(R.string.upload_result_title, result.getInventoryId()));
-            tvResultBody.setText(getString(R.string.upload_result_body,
+            String summary = getString(R.string.upload_result_title, result.getInventoryId()) + "\n"
+                    + getString(R.string.upload_result_body,
                     result.getRowsProcessed(), result.getPresentation(),
-                    result.getProductsCreated(), result.getStockRowsCreated()));
-            resultCard.setVisibility(View.VISIBLE);
-
-            // Evita volver a procesar el mismo archivo por accidente y crear un inventario duplicado.
-            selectedFileUri = null;
-            selectedFileName = null;
-            btnUpload.setEnabled(false);
-            tvFileName.setText(R.string.upload_dropzone_placeholder_title);
-            tvFileMeta.setText(R.string.upload_dropzone_placeholder_meta);
+                    result.getProductsCreated(), result.getStockRowsCreated());
+            Toast.makeText(getApplicationContext(), summary, Toast.LENGTH_LONG).show();
+            setResult(RESULT_OK);
+            finish();
         } else {
             Toast.makeText(this, getString(R.string.upload_error_generic, ApiErrorUtils.parseErrorMessage(response)), Toast.LENGTH_LONG).show();
         }

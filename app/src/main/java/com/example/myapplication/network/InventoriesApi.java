@@ -10,7 +10,11 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 
 public interface InventoriesApi {
-    @GET("inventories")
+    /**
+     * Mas recientes primero: por fecha y, entre inventarios del mismo dia, por id
+     * (orden de carga). Se ordena en el servidor porque la lista es paginada.
+     */
+    @GET("inventories?sort=inventoryDate,desc&sort=id,desc")
     Call<PageResponse<InventoryDTO>> getInventories(@Query("page") int page, @Query("size") int size);
 
     @GET("inventories/allByType/{type}")

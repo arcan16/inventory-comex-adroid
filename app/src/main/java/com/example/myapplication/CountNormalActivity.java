@@ -35,7 +35,6 @@ import com.example.myapplication.data.ServerPreferences;
 import com.example.myapplication.data.SessionPreferences;
 import com.example.myapplication.network.ApiClient;
 import com.example.myapplication.network.ApiErrorUtils;
-import com.example.myapplication.network.AssignBarcodeRequest;
 import com.example.myapplication.network.CreateProductCountRequest;
 import com.example.myapplication.network.CreateProductCountResultDTO;
 import com.example.myapplication.network.InventoriesApi;
@@ -47,8 +46,8 @@ import com.example.myapplication.network.ProductCountEntryDTO;
 import com.example.myapplication.network.ProductCountsApi;
 import com.example.myapplication.network.ProductDTO;
 import com.example.myapplication.network.ProductPresentationDTO;
-import com.example.myapplication.network.ProductsApi;
 import com.example.myapplication.network.StockItemDTO;
+import com.example.myapplication.scanner.BarcodeLookup;
 import com.example.myapplication.scanner.BarcodeScanHelper;
 import com.example.myapplication.util.DateFormatUtils;
 import com.google.android.material.appbar.MaterialToolbar;
@@ -59,10 +58,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -96,8 +93,8 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     // ---- Busqueda por codigo de barras ----
     /** Presentacion del inventario ("1 LT", "4 LTS"...), para detectar codigos de otra presentacion. */
     private String inventoryPresentation;
-    /** Presentaciones con codigo que llegan con el inventario, mas las encontradas por red despues. */
-    private final Map<String, ProductPresentationDTO> presentationByBarcode = new HashMap<>();
+    /** Busca codigos en las presentaciones del inventario y, si no estan, en el servidor. */
+    private BarcodeLookup barcodeLookup;
     private BarcodeScanHelper barcodeScan;
     /** Modo "Barras": etCode contiene un codigo de barras en lugar del id del producto. */
     private boolean barcodeMode;
@@ -112,8 +109,6 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
     private ProductPresentationDTO pendingBarcodePresentation;
     /** Codigo no registrado que se asignara al producto elegido en ProductPickerActivity. */
     private String barcodeToAssign;
-    /** Descarta respuestas de busquedas por red que llegan despues de un reset o de otra lectura. */
-    private int barcodeLookupGeneration;
 
     private MaterialButtonToggleGroup toggleGroup;
     private TextView tvCodeLabel;
@@ -183,7 +178,8 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         tvErrorMessage = findViewById(R.id.tvErrorMessage);
 
         inventoryPresentation = presentation;
-        barcodeScan = new BarcodeScanHelper(this, new BarcodeScanHelper.Listener() {
+        barcodeLookup = new BarcodeLookup(serverPreferences.getBaseUrl(), sessionPreferences.getToken());
+        barcodeScan =new BarcodeScanHelper(this, new BarcodeScanHelper.Listener() {
             @Override
             public void onBarcodeScanned(@NonNull String value) {
                 onScannedBarcode(value.trim());
@@ -390,12 +386,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
                 if (response.isSuccessful() && response.body() != null) {
                     products = response.body().getProducts();
                     stock = response.body().getStock();
-                    presentationByBarcode.clear();
-                    for (ProductPresentationDTO presentation : response.body().getBarcodes()) {
-                        if (!TextUtils.isEmpty(presentation.getBarcode())) {
-                            presentationByBarcode.put(presentation.getBarcode(), presentation);
-                        }
-                    }
+                    barcodeLookup.setKnownPresentations(response.body().getBarcodes());
                     // El backend regresa los conteos en orden de insercion (mas viejo primero);
                     // se invierte para que el ultimo producto agregado aparezca al inicio.
                     productCounts = response.body().getProductsCount();
@@ -572,53 +563,37 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
      */
     private void resolveBarcode(String code) {
         hideBarcodeBanners();
-        ProductPresentationDTO local = presentationByBarcode.get(code);
-        if (local != null) {
-            onBarcodeFound(code, local);
-            return;
-        }
-
-        int generation = ++barcodeLookupGeneration;
-        ProductsApi api = ApiClient.createProductsApi(
-                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
-        api.getPresentationByBarcode(code).enqueue(new Callback<ProductPresentationDTO>() {
+        barcodeLookup.resolve(code, new BarcodeLookup.Callback() {
             @Override
-            public void onResponse(@NonNull Call<ProductPresentationDTO> call,
-                                   @NonNull Response<ProductPresentationDTO> response) {
-                if (generation != barcodeLookupGeneration || isFinishing()) {
-                    return;
-                }
-                if (response.code() == 401) {
-                    handleSessionExpired();
-                    return;
-                }
-                if (response.isSuccessful() && response.body() != null) {
-                    presentationByBarcode.put(code, response.body());
-                    onBarcodeFound(code, response.body());
-                } else if (response.code() == 404) {
-                    showUnknownBarcode(code);
-                } else {
-                    Toast.makeText(CountNormalActivity.this,
-                            getString(R.string.count_barcode_lookup_error, ApiErrorUtils.parseErrorMessage(response)),
-                            Toast.LENGTH_LONG).show();
+            public void onFound(@NonNull String foundCode, @NonNull ProductPresentationDTO presentation) {
+                if (!isFinishing()) {
+                    onBarcodeFound(foundCode, presentation);
                 }
             }
 
             @Override
-            public void onFailure(@NonNull Call<ProductPresentationDTO> call, @NonNull Throwable t) {
-                if (generation != barcodeLookupGeneration || isFinishing()) {
-                    return;
+            public void onNotFound(@NonNull String notFoundCode) {
+                if (!isFinishing()) {
+                    showUnknownBarcode(notFoundCode);
                 }
-                String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
+            }
+
+            @Override
+            public void onError(@NonNull String reason) {
                 Toast.makeText(CountNormalActivity.this,
                         getString(R.string.count_barcode_lookup_error, reason), Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSessionExpired() {
+                handleSessionExpired();
             }
         });
     }
 
     /** Si la presentacion del codigo no es la del inventario, se avisa antes de contar. */
     private void onBarcodeFound(String code, ProductPresentationDTO presentation) {
-        if (isSamePresentation(presentation.getPresentation(), inventoryPresentation)) {
+        if (BarcodeLookup.isSamePresentation(presentation.getPresentation(), inventoryPresentation)) {
             applyBarcodeProduct(code, presentation, false);
             return;
         }
@@ -695,37 +670,31 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
      * el conteo continua con ese producto.
      */
     private void assignBarcode(String code, String productId) {
-        ProductsApi api = ApiClient.createProductsApi(
-                serverPreferences.getBaseUrl(), sessionPreferences.getToken());
-        api.assignBarcode(productId, new AssignBarcodeRequest(inventoryPresentation, code))
-                .enqueue(new Callback<ProductPresentationDTO>() {
-                    @Override
-                    public void onResponse(@NonNull Call<ProductPresentationDTO> call,
-                                           @NonNull Response<ProductPresentationDTO> response) {
-                        if (response.code() == 401) {
-                            handleSessionExpired();
-                            return;
-                        }
-                        if (response.isSuccessful() && response.body() != null) {
-                            presentationByBarcode.put(code, response.body());
-                            Toast.makeText(CountNormalActivity.this,
-                                    getString(R.string.count_barcode_assigned, productId, inventoryPresentation),
-                                    Toast.LENGTH_SHORT).show();
-                            applyBarcodeProduct(code, response.body(), false);
-                        } else {
-                            Toast.makeText(CountNormalActivity.this,
-                                    getString(R.string.count_barcode_assign_error, ApiErrorUtils.parseErrorMessage(response)),
-                                    Toast.LENGTH_LONG).show();
-                        }
-                    }
+        barcodeLookup.assign(productId, inventoryPresentation, code, new BarcodeLookup.Callback() {
+            @Override
+            public void onFound(@NonNull String assignedCode, @NonNull ProductPresentationDTO presentation) {
+                Toast.makeText(CountNormalActivity.this,
+                        getString(R.string.count_barcode_assigned, productId, inventoryPresentation),
+                        Toast.LENGTH_SHORT).show();
+                applyBarcodeProduct(assignedCode, presentation, false);
+            }
 
-                    @Override
-                    public void onFailure(@NonNull Call<ProductPresentationDTO> call, @NonNull Throwable t) {
-                        String reason = t.getMessage() != null ? t.getMessage() : t.getClass().getSimpleName();
-                        Toast.makeText(CountNormalActivity.this,
-                                getString(R.string.count_barcode_assign_error, reason), Toast.LENGTH_LONG).show();
-                    }
-                });
+            @Override
+            public void onNotFound(@NonNull String notFoundCode) {
+                // No aplica al asignar.
+            }
+
+            @Override
+            public void onError(@NonNull String reason) {
+                Toast.makeText(CountNormalActivity.this,
+                        getString(R.string.count_barcode_assign_error, reason), Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onSessionExpired() {
+                handleSessionExpired();
+            }
+        });
     }
 
     /** Chip bajo la descripcion: verde si coincide la presentacion, ambar si se conto de otra. */
@@ -762,14 +731,6 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         ImageViewCompat.setImageTintList(btnScanBarcode,
                 ColorStateList.valueOf(scanning ? errorColor : primaryColor));
         fabScanBarcode.setBackgroundTintList(ColorStateList.valueOf(scanning ? errorColor : primaryColor));
-    }
-
-    /** Compara presentaciones ignorando mayusculas y espacios ("4 lts" == "4 LTS"). */
-    private static boolean isSamePresentation(String a, String b) {
-        if (a == null || b == null) {
-            return true; // Sin presentacion del inventario no hay contra que comparar.
-        }
-        return a.trim().replaceAll("\\s+", " ").equalsIgnoreCase(b.trim().replaceAll("\\s+", " "));
     }
 
     /** Id del producto que se cuenta: en modo Barras el resuelto a partir del codigo. */
@@ -1189,7 +1150,7 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         editingEntry = null;
         updateAddButtonLabel();
         barcodeScan.stop();
-        barcodeLookupGeneration++;
+        barcodeLookup.cancelPending();
         hideBarcodeBanners();
         hideBarcodeInfo();
         resolvedBarcode = null;
@@ -1238,6 +1199,12 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
 
     private void updateAddButtonLabel() {
         btnAdd.setText(editingEntry != null ? R.string.count_update : R.string.count_add);
+    }
+
+    /** Mantener presionado 1 s un renglon: detalle de solo lectura, sin entrar a la edicion. */
+    @Override
+    public void onShowDetail(ProductCountEntryDTO entry) {
+        CountEntryDetailDialog.show(this, entry);
     }
 
     @Override

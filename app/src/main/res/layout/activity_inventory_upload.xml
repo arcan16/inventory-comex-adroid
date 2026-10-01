@@ -86,56 +86,6 @@
                     android:layout_marginStart="12dp"
                     android:visibility="gone" />
             </LinearLayout>
-
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/resultCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:visibility="gone"
-                app:cardBackgroundColor="@color/app_successContainer"
-                app:strokeColor="@color/app_success"
-                app:strokeWidth="1dp"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="0dp"
-                app:contentPadding="12dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    <ImageView
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginTop="2dp"
-                        android:src="@drawable/ic_check"
-                        app:tint="@color/app_onSuccessContainer"
-                        android:contentDescription="@null" />
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView
-                            android:id="@+id/tvResultTitle"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:textStyle="bold"
-                            android:textColor="@color/app_onSuccessContainer"
-                            tools:text="Inventario #48 creado" />
-                        <TextView
-                            android:id="@+id/tvResultBody"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:textAppearance="?attr/textAppearanceBodySmall"
-                            android:lineSpacingMultiplier="1.3"
-                            android:textColor="@color/app_onSuccessContainer"
-                            tools:text="Presentación 4 LTS" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

@@ -1,39 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  Renglon de la lista de conteos. Toque corto = editar; mantener 1 s = ver el
+  detalle. Mientras se mantiene presionado, holdFill se llena de izquierda a
+  derecha y holdProgress marca el avance (ver ProductCountAdapter).
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    style="@style/App.ListRow"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground">
 
-    <TextView
-        android:id="@+id/tvCountProductId"
-        style="@style/App.ListRow.Title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        tools:text="1100" />
+    <View
+        android:id="@+id/holdFill"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?attr/colorPrimaryContainer"
+        android:transformPivotX="0dp"
+        android:scaleX="0" />
 
-    <TextView
-        android:id="@+id/tvCountQuantity"
-        style="@style/App.ListRow.Trail"
-        android:layout_width="0dp"
+    <LinearLayout
+        style="@style/App.ListRow"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        tools:text="5.000" />
+        android:background="@null">
 
-    <ImageView
-        android:id="@+id/ivDeleteCount"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:padding="9dp"
-        android:src="@drawable/ic_trash"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true"
-        app:tint="?attr/colorOnSurfaceVariant"
-        android:contentDescription="@string/count_col_action" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/tvCountProductId"
+            style="@style/App.ListRow.Title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            tools:text="1100" />
+
+        <TextView
+            android:id="@+id/tvCountQuantity"
+            style="@style/App.ListRow.Trail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            tools:text="5.000" />
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/holdProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="6dp"
+            android:max="100"
+            android:visibility="invisible"
+            app:indicatorSize="20dp"
+            app:trackThickness="2.5dp"
+            app:indicatorColor="?attr/colorPrimary"
+            tools:progress="50"
+            tools:visibility="visible" />
+
+        <ImageView
+            android:id="@+id/ivDeleteCount"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="9dp"
+            android:src="@drawable/ic_trash"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="?attr/colorOnSurfaceVariant"
+            android:contentDescription="@string/count_col_action" />
+    </LinearLayout>
+</FrameLayout>

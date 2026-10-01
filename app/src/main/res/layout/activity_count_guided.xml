@@ -14,6 +14,7 @@
         android:layout_height="?attr/actionBarSize"
         app:navigationIcon="@drawable/ic_back"
         app:navigationIconTint="?attr/colorOnPrimary"
+        app:menu="@menu/count_normal_menu"
         app:title="@string/count_guided_title" />
 
     <FrameLayout
@@ -31,7 +32,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="16dp"
+                android:paddingBottom="88dp">
+                <!-- paddingBottom: espacio para que el boton flotante no tape el boton Resumen al final. -->
 
                 <TextView
                     android:id="@+id/tvGuidedProgress"
@@ -64,6 +67,66 @@
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
                         <TextView style="@style/App.Chip.Primary" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_current" />
 
+                        <!-- Al tocar un conteo de la lista: se edita ese renglon en lugar de crear uno nuevo. -->
+                        <TextView
+                            android:id="@+id/tvEditingInfo"
+                            style="@style/App.Chip.Accent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:visibility="gone"
+                            tools:visibility="visible"
+                            tools:text="Editando el conteo de 3.000 (Almacén)" />
+
+                        <!-- Verificar el envase: escanear o escribir su codigo de barras. -->
+                        <LinearLayout style="@style/App.Field" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp">
+                            <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_barcode_label" />
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical">
+                                <EditText
+                                    android:id="@+id/etBarcode"
+                                    style="@style/App.Field.Value"
+                                    android:layout_width="0dp"
+                                    android:layout_weight="1"
+                                    android:layout_height="wrap_content"
+                                    android:background="@null"
+                                    android:padding="0dp"
+                                    android:minHeight="0dp"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:imeOptions="actionSearch"
+                                    android:hint="@string/count_guided_barcode_hint" />
+                                <ImageView
+                                    android:id="@+id/btnScanBarcode"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_marginStart="8dp"
+                                    android:padding="2dp"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                                    android:src="@drawable/ic_barcode"
+                                    app:tint="?attr/colorPrimary"
+                                    android:contentDescription="@string/product_barcode_scan_action" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvBarcodeInfo"
+                            style="@style/App.Chip.Good"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:fontFamily="monospace"
+                            android:visibility="gone"
+                            tools:visibility="visible"
+                            tools:text="7500025005071 · 1 LT" />
+
+                        <include layout="@layout/include_barcode_banners" />
+
                         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="10dp">
                             <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="8dp">
                                 <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_id_label" />
@@ -94,6 +157,17 @@
                                     android:maxLines="1"
                                     android:imeOptions="actionDone"
                                     android:hint="@string/count_guided_quantity_hint" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="10dp">
+                            <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:layout_marginEnd="8dp">
+                                <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_guided_counted_label" />
+                                <TextView android:id="@+id/tvCounted" style="@style/App.Field.Value.Muted" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="2.000" />
+                            </LinearLayout>
+                            <LinearLayout style="@style/App.Field.Disabled" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
+                                <TextView style="@style/App.Field.Label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_difference_label" />
+                                <TextView android:id="@+id/tvDifference" style="@style/App.Field.Value.Muted" android:layout_width="wrap_content" android:layout_height="wrap_content" tools:text="-3.000" />
                             </LinearLayout>
                         </LinearLayout>
 
@@ -153,10 +227,48 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    style="@style/App.Field"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/ic_search"
+                        app:tint="?attr/colorOnSurfaceVariant"
+                        android:contentDescription="@string/count_search_registered_hint" />
+                    <EditText
+                        android:id="@+id/etSearchCount"
+                        style="@style/App.Field.Value"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:padding="0dp"
+                        android:minHeight="0dp"
+                        android:hint="@string/count_search_registered_hint"
+                        android:inputType="textCapCharacters"
+                        android:maxLines="1" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvSearchCountResult"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textAppearance="?attr/textAppearanceLabelSmall"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:visibility="gone"
+                    tools:visibility="visible"
+                    tools:text="3 registros encontrados" />
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="18dp">
+                    android:layout_marginTop="10dp">
                     <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_col_id" />
                     <TextView style="@style/App.ListHeader" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/count_col_quantity" />
                     <TextView style="@style/App.ListHeader" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/count_col_action" />
@@ -225,5 +337,18 @@
                 android:layout_marginTop="14dp"
                 android:text="@string/inventories_retry" />
         </LinearLayout>
+
+        <!-- Acceso rapido al escaneo de verificacion; hace lo mismo que btnScanBarcode
+             (en la tarjeta del producto actual), solo que siempre visible sin tener que hacer scroll. -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fabScanBarcode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="20dp"
+            android:src="@drawable/ic_barcode"
+            app:tint="?attr/colorOnPrimary"
+            app:backgroundTint="?attr/colorPrimary"
+            android:contentDescription="@string/product_barcode_scan_action" />
     </FrameLayout>
 </LinearLayout>

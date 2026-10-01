@@ -32,8 +32,12 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
 
     private static final int PAGE_SIZE = 50;
 
-    /** RESULT_OK = el conteo se finalizo (inventario cerrado): se recarga la lista para reflejarlo. */
-    private final ActivityResultLauncher<Intent> normalCountLauncher =
+    /**
+     * Abre las pantallas que cambian la lista: conteo normal y guiado (RESULT_OK =
+     * conteo finalizado, inventario cerrado) y carga de archivo (RESULT_OK =
+     * inventario nuevo). En ambos casos se recarga la lista para reflejarlo.
+     */
+    private final ActivityResultLauncher<Intent> reloadOnResultLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK) {
                     loadInventories(false);
@@ -73,7 +77,8 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
 
         swipeRefresh.setOnRefreshListener(() -> loadInventories(false));
         findViewById(R.id.btnRetry).setOnClickListener(v -> loadInventories(true));
-        fab.setOnClickListener(v -> startActivity(new Intent(this, InventoryUploadActivity.class)));
+        // Al cargar un archivo, InventoryUploadActivity responde RESULT_OK y la lista se recarga.
+        fab.setOnClickListener(v -> reloadOnResultLauncher.launch(new Intent(this, InventoryUploadActivity.class)));
 
         loadInventories(true);
     }
@@ -177,7 +182,7 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
         intent.putExtra(CountNormalActivity.EXTRA_INVENTORY_ID, inventory.getId());
         intent.putExtra(CountNormalActivity.EXTRA_PRESENTATION, inventory.getPresentation());
         intent.putExtra(CountNormalActivity.EXTRA_DATE, inventory.getDate());
-        normalCountLauncher.launch(intent);
+        reloadOnResultLauncher.launch(intent);
     }
 
     private void reopenInventory(InventoryDTO inventory) {
@@ -218,7 +223,7 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
         intent.putExtra(CountGuidedActivity.EXTRA_INVENTORY_ID, inventory.getId());
         intent.putExtra(CountGuidedActivity.EXTRA_PRESENTATION, inventory.getPresentation());
         intent.putExtra(CountGuidedActivity.EXTRA_DATE, inventory.getDate());
-        startActivity(intent);
+        reloadOnResultLauncher.launch(intent);
     }
 
     @Override
