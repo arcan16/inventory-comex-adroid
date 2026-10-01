@@ -90,6 +90,8 @@
     <string name="inventories_reopened_toast">Inventario reabierto</string>
     <string name="inventories_reopen_error">No fue posible reabrir el inventario: %1$s</string>
     <string name="inventories_locked_title">Inventario bloqueado</string>
+    <string name="inventories_locked_by_message">El inventario %1$s lo está usando %2$s en este momento. Se libera cuando sale del conteo.</string>
+    <string name="count_locked_by_other_title">Inventario en uso</string>
     <string name="inventories_locked_message">El inventario %1$s no se puede abrir porque se está utilizando en este momento.</string>
     <string name="action_accept">Entendido</string>
     <string name="inventories_session_expired">Tu sesión expiró, inicia sesión de nuevo</string>

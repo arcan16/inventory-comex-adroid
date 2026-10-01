@@ -31,6 +31,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.adapter.ProductCountAdapter;
+import com.example.myapplication.data.InventoryLock;
 import com.example.myapplication.data.ServerPreferences;
 import com.example.myapplication.data.SessionPreferences;
 import com.example.myapplication.network.ApiClient;
@@ -153,6 +154,18 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         sessionPreferences = new SessionPreferences(this);
 
         inventoryId = getIntent().getLongExtra(EXTRA_INVENTORY_ID, -1);
+        // Marca el inventario en uso (LOCKED) mientras este conteo esta abierto; ver InventoryLock.
+        new InventoryLock(this, inventoryId, new InventoryLock.Listener() {
+            @Override
+            public void onLockedByOther(@NonNull String message) {
+                showLockedByOtherDialog(message);
+            }
+
+            @Override
+            public void onSessionExpired() {
+                handleSessionExpired();
+            }
+        });
         String presentation = getIntent().getStringExtra(EXTRA_PRESENTATION);
         String dateIso = getIntent().getStringExtra(EXTRA_DATE);
 
@@ -506,6 +519,19 @@ public class CountNormalActivity extends BaseActivity implements ProductCountAda
         tvErrorMessage.setText(message);
         errorState.setVisibility(View.VISIBLE);
         contentScroll.setVisibility(View.GONE);
+    }
+
+    /** Otro usuario esta usando el inventario: se avisa quien y se regresa a la lista. */
+    private void showLockedByOtherDialog(String message) {
+        if (isFinishing()) {
+            return;
+        }
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.count_locked_by_other_title)
+                .setMessage(message)
+                .setCancelable(false)
+                .setPositiveButton(R.string.action_accept, (dialog, which) -> finish())
+                .show();
     }
 
     private void handleSessionExpired() {

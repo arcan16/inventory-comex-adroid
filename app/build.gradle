@@ -46,6 +46,7 @@ dependencies {
     implementation libs.camera.camera2
     implementation libs.camera.lifecycle
     implementation libs.mlkit.barcode
+    implementation libs.lifecycle.process
     testImplementation libs.junit
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.ext.junit

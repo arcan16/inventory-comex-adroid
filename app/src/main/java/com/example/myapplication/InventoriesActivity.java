@@ -2,6 +2,8 @@ package com.example.myapplication;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,16 +35,17 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
     private static final int PAGE_SIZE = 50;
 
     /**
-     * Abre las pantallas que cambian la lista: conteo normal y guiado (RESULT_OK =
-     * conteo finalizado, inventario cerrado) y carga de archivo (RESULT_OK =
-     * inventario nuevo). En ambos casos se recarga la lista para reflejarlo.
+     * Abre las pantallas que cambian la lista: conteo normal y guiado (al entrar
+     * se bloquea y al salir se libera el inventario, o se cierra con Finalizar
+     * conteo) y carga de archivo (inventario nuevo). Al regresar se recarga la
+     * lista para mostrar el estado actual de cada inventario.
      */
+    private static final long RELOAD_AFTER_COUNT_MS = 500;
+    private final Handler reloadHandler = new Handler(Looper.getMainLooper());
     private final ActivityResultLauncher<Intent> reloadOnResultLauncher =
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                if (result.getResultCode() == RESULT_OK) {
-                    loadInventories(false);
-                }
-            });
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                    // Breve espera: el conteo envia el desbloqueo al cerrarse, casi al mismo tiempo.
+                    result -> reloadHandler.postDelayed(() -> loadInventories(false), RELOAD_AFTER_COUNT_MS));
 
     private ServerPreferences serverPreferences;
     private SessionPreferences sessionPreferences;
@@ -81,6 +84,12 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
         fab.setOnClickListener(v -> reloadOnResultLauncher.launch(new Intent(this, InventoryUploadActivity.class)));
 
         loadInventories(true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        reloadHandler.removeCallbacksAndMessages(null);
     }
 
     private void loadInventories(boolean showFullProgress) {
@@ -155,12 +164,8 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
 
     @Override
     public void onOpenNormalCount(InventoryDTO inventory) {
-        if ("LOCKED".equals(inventory.getStatus())) {
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.inventories_locked_title)
-                    .setMessage(getString(R.string.inventories_locked_message, inventory.getPresentation()))
-                    .setPositiveButton(R.string.action_accept, null)
-                    .show();
+        if (isLockedByOther(inventory)) {
+            showLockedDialog(inventory);
             return;
         }
 
@@ -217,8 +222,36 @@ public class InventoriesActivity extends BaseActivity implements InventoryAdapte
         });
     }
 
+    /**
+     * LOCKED = alguien esta dentro de su conteo (ver InventoryLock). Si es el
+     * propio usuario (p. ej. la app se cerro de golpe y el bloqueo aun no
+     * expira), se le deja entrar; el backend renueva su bloqueo.
+     */
+    private boolean isLockedByOther(InventoryDTO inventory) {
+        if (!"LOCKED".equals(inventory.getStatus())) {
+            return false;
+        }
+        String me = sessionPreferences.getUsername();
+        return me == null || !me.equalsIgnoreCase(inventory.getLockedByUsername());
+    }
+
+    private void showLockedDialog(InventoryDTO inventory) {
+        String holder = inventory.getLockedByUsername();
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.inventories_locked_title)
+                .setMessage(holder != null
+                        ? getString(R.string.inventories_locked_by_message, inventory.getPresentation(), holder)
+                        : getString(R.string.inventories_locked_message, inventory.getPresentation()))
+                .setPositiveButton(R.string.action_accept, null)
+                .show();
+    }
+
     @Override
     public void onOpenGuidedCount(InventoryDTO inventory) {
+        if (isLockedByOther(inventory)) {
+            showLockedDialog(inventory);
+            return;
+        }
         Intent intent = new Intent(this, CountGuidedActivity.class);
         intent.putExtra(CountGuidedActivity.EXTRA_INVENTORY_ID, inventory.getId());
         intent.putExtra(CountGuidedActivity.EXTRA_PRESENTATION, inventory.getPresentation());

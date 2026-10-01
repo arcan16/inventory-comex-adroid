@@ -26,6 +26,14 @@ public interface InventoriesApi {
     @PUT("inventories/{id}/reopen")
     Call<InventoryDTO> reopenInventory(@Path("id") long id);
 
+    /** Marca el inventario en uso (LOCKED) por esta sesion o renueva el bloqueo. 409 si lo usa otro usuario. */
+    @PUT("inventories/{id}/lock")
+    Call<InventoryDTO> lockInventory(@Path("id") long id);
+
+    /** Lo regresa a OPENED si el bloqueo es de esta sesion. */
+    @PUT("inventories/{id}/unlock")
+    Call<InventoryDTO> unlockInventory(@Path("id") long id);
+
     @DELETE("inventories/{id}")
     Call<Void> deleteInventory(@Path("id") long id);
 
